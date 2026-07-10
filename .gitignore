@@ -1,0 +1,7 @@
+*.bak
+.DS_Store
+.vercel
+
+# Local backups (not for deploy)
+_old_sfx/
+assets/_old/

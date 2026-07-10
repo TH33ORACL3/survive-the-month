@@ -1,0 +1,2570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Survive the Month — Budget Hub</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&f[]=satoshi@500,700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+<meta name="description" content="A South African budgeting game in rands. Allocate your salary, survive weekly shocks, build your emergency fund.">
+<meta name="theme-color" content="#6c5ce7">
+<style>
+  :root{
+    --bg:#F8F9FA;
+    --bg-dark:#1A1A1D;
+    --card:#ffffff;
+    --ink:#2E2E32;
+    --muted:#6B6B6D;
+    --line:#2E2E32;
+    --purple:#6c5ce7;
+    --purple-dark:#5849b8;
+    --purple-soft:#EDE9FE;
+    --green:#10B981;
+    --green-soft:#D1FAE5;
+    --red:#EF4444;
+    --red-soft:#FEE2E2;
+    --amber:#F59E0B;
+    --amber-soft:#FEF3C7;
+    --shadow:4px 4px 0 #2E2E32;
+    --shadow-lg:8px 8px 0 #2E2E32;
+    --radius:14px;
+    --radius-btn:12px;
+    --font-display:'Cabinet Grotesk',system-ui,sans-serif;
+    --font-body:'Plus Jakarta Sans','Satoshi',system-ui,sans-serif;
+    --ease:cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{
+    scroll-behavior:smooth;
+  }
+  body{
+    font-family:var(--font-body);
+    font-weight:500;
+    color:var(--ink);
+    line-height:1.5;
+    min-height:100vh;
+    min-height:100dvh;
+    background-color:var(--bg);
+    background-image:radial-gradient(circle,rgba(108,92,231,.18) 1px,transparent 1px);
+    background-size:28px 28px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    overflow-y:auto; /* natural page scroll — uses the full viewport */
+  }
+  body.modal-open{overflow:hidden}
+  ::selection{background:var(--ink);color:var(--bg)}
+
+  .stage{
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;flex-direction:column;
+    overflow-x:hidden;
+  }
+  .ticker{
+    background:var(--bg-dark);color:#ffffff;border-bottom:3px solid var(--ink);
+    overflow:hidden;white-space:nowrap;font-family:var(--font-display);
+    font-weight:700;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;
+    padding:10px 0;position:sticky;top:0;z-index:40;
+    flex:none;
+  }
+  .ticker-track{
+    display:inline-block;padding-left:100%;
+    animation:marquee 95s linear infinite;
+  }
+  .ticker-track span{margin-right:2.5rem;opacity:.9}
+  .ticker-track .hi{color:var(--amber)}
+  @keyframes marquee{to{transform:translateX(-100%)}}
+
+  .wrap{
+    max-width:960px;
+    margin:0 auto;
+    padding:16px 20px max(28px, env(safe-area-inset-bottom, 0px));
+    width:100%;
+    position:relative;
+    z-index:1;
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    box-sizing:border-box;
+    gap:4px;
+  }
+  @media(min-width:1100px){
+    .wrap{max-width:1040px;padding:20px 28px 36px}
+  }
+  @media(max-width:520px){
+    .wrap{padding:12px 12px max(20px, env(safe-area-inset-bottom, 0px))}
+  }
+
+  header.top{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:8px;
+    flex:none;
+  }
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand .mark{
+    width:40px;height:40px;border:3px solid var(--ink);border-radius:12px;
+    background:#ffffff;box-shadow:var(--shadow);
+    display:grid;place-items:center;font-size:1.15rem;
+    transform:rotate(-6deg);
+  }
+  .brand-text{display:flex;flex-direction:column;line-height:1.05}
+  .brand-text strong{
+    font-family:var(--font-display);font-size:.95rem;font-weight:800;
+    letter-spacing:-.03em;text-transform:uppercase;
+  }
+  .brand-text span{
+    font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.7;
+  }
+
+  .ghost{
+    background:#ffffff;border:3px solid var(--ink);color:var(--ink);border-radius:12px;
+    padding:8px 10px;font-size:.72rem;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;cursor:pointer;font-family:var(--font-body);
+    box-shadow:3px 3px 0 var(--ink);transition:transform .12s var(--ease),box-shadow .12s var(--ease);
+  }
+  .ghost:hover{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+  .ghost:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+  .ghost:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
+
+  .card{
+    background:var(--card);border:3px solid var(--ink);border-radius:22px;
+    padding:clamp(18px, 3.5vw, 28px);box-shadow:var(--shadow-lg);position:relative;
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    gap:4px;
+  }
+  .card.card-fill{
+    /* Prefer breathing room over nested cramped panes */
+    flex:1 1 auto;
+    min-height:min(72vh, 720px);
+  }
+  .card::before{
+    content:"";position:absolute;inset:-3px;border-radius:24px;border:3px solid transparent;
+    pointer-events:none;
+  }
+
+  h1,h2,h3{font-family:var(--font-display);font-weight:800;line-height:1.08;color:var(--ink);letter-spacing:-.03em}
+  h1{font-size:clamp(1.85rem,5.5vw,2.75rem);text-transform:uppercase;margin-bottom:10px}
+  h2{font-size:clamp(1.25rem,3.2vw,1.55rem);text-transform:uppercase;margin-bottom:10px}
+  h3{font-size:1.02rem;text-transform:uppercase;margin-bottom:8px;font-weight:700}
+  p.lead{color:var(--muted);margin-bottom:16px;font-size:clamp(.92rem,2vw,1.02rem);line-height:1.55;max-width:42rem}
+  .kicker{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+    background:#ffffff;border:2px solid var(--ink);border-radius:999px;padding:4px 10px;
+    box-shadow:2px 2px 0 var(--ink);margin-bottom:10px;
+    flex:none;
+    align-self:flex-start;
+  }
+  .kicker .dot{width:6px;height:6px;border-radius:50%;background:#28c840;border:1.5px solid var(--ink)}
+
+  .btn{
+    background:var(--ink);color:#ffffff;border:3px solid var(--ink);border-radius:var(--radius-btn);
+    padding:12px 18px;font-size:.88rem;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;cursor:pointer;font-family:var(--font-display);
+    box-shadow:4px 4px 0 var(--ink);transition:transform .12s var(--ease),box-shadow .12s var(--ease),background .12s;
+    flex:none;
+  }
+  .btn:hover:not(:disabled){transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink);background:var(--purple-dark)}
+  .btn:active:not(:disabled){transform:translate(4px,4px);box-shadow:0 0 0 var(--ink)}
+  .btn:disabled{background:#9ca3af;border-color:#6b7280;color:#e5e7eb;box-shadow:2px 2px 0 #6b7280;cursor:not-allowed;transform:none}
+  .btn:focus-visible{outline:3px solid var(--purple);outline-offset:3px}
+  .btn.sec{background:#ffffff;color:var(--ink)}
+  .btn.sec:hover:not(:disabled){background:var(--purple-soft)}
+  .btn.block{width:100%}
+  .btn.play{
+    background:var(--purple);border-color:var(--ink);color:#ffffff;
+    font-size:.95rem;padding:14px 18px;
+  }
+  .btn.play:hover:not(:disabled){background:var(--purple-dark)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .btnrow{display:flex;gap:6px;align-items:center}
+
+  /* GAME HUD */
+  .hud{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;
+    flex:none;
+  }
+  .stat{
+    background:#ffffff;border:3px solid var(--ink);border-radius:16px;padding:12px;
+    box-shadow:var(--shadow);position:relative;overflow:hidden;
+  }
+  .stat::after{
+    content:"";position:absolute;top:0;left:0;right:0;height:6px;background:var(--stat-accent,var(--purple));
+    border-bottom:2px solid var(--ink);
+  }
+  .stat:nth-child(1){--stat-accent:var(--purple)}
+  .stat:nth-child(2){--stat-accent:var(--green)}
+  .stat:nth-child(3){--stat-accent:var(--red)}
+  .stat:nth-child(4){--stat-accent:#171e19}
+  .stat .lbl{
+    font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;font-weight:700;opacity:.65;margin-top:4px;
+  }
+  .stat .val{
+    font-family:var(--font-display);font-size:1.08rem;font-weight:800;margin-top:2px;line-height:1.15;letter-spacing:-.02em;
+  }
+  .val.pos{color:var(--green)} .val.neg{color:var(--red)} .val.pur{color:var(--purple)}
+  @media(max-width:560px){.hud{grid-template-columns:repeat(2,1fr)}}
+
+  /* Character select */
+  .personas{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:16px 0 22px}
+  @media(max-width:800px){.personas{grid-template-columns:1fr;gap:12px}}
+  .persona{
+    border:3px solid var(--ink);border-radius:18px;padding:18px 16px 20px;
+    cursor:pointer;background:#ffffff;box-shadow:var(--shadow);
+    transition:transform .14s var(--ease),box-shadow .14s var(--ease),background .14s;
+    position:relative;overflow:hidden;text-align:left;
+    width:100%;font:inherit;color:inherit;display:block;
+  }
+  .persona:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
+  .persona.on{
+    background:var(--purple-soft);transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink);
+    outline:3px solid var(--purple);outline-offset:0;
+  }
+  .persona .picon{
+    width:52px;height:52px;border:3px solid var(--ink);border-radius:14px;
+    display:grid;place-items:center;font-size:1.6rem;background:var(--sage);
+    margin-bottom:12px;box-shadow:2px 2px 0 var(--ink);
+  }
+  
+  
+  
+  
+  
+  
+  .persona .name{font-family:var(--font-display);font-weight:800;margin-bottom:6px;font-size:.98rem;text-transform:uppercase;letter-spacing:-.02em}
+  .persona .inc{font-family:var(--font-display);font-weight:800;color:var(--green);font-size:1.05rem}
+  .persona small{color:var(--muted);display:block;margin-top:8px;font-size:.82rem;line-height:1.4;font-weight:500}
+  .tag{
+    display:inline-block;font-size:.62rem;padding:3px 8px;border-radius:999px;font-weight:700;
+    letter-spacing:.05em;text-transform:uppercase;vertical-align:middle;margin-left:4px;
+    background:#ffffff;border:2px solid var(--ink);
+  }
+  .tag.mid{background:var(--amber-soft)}
+  .tag.hard{background:var(--red-soft)}
+
+  /* budget rows */
+  .cat{
+    padding:14px;margin:0 0 10px;background:#fafafa;border:2px solid var(--ink);border-radius:14px;
+  }
+  .cathead{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.95rem}
+  .cathead .catval{
+    margin-left:auto;font-family:var(--font-display);font-weight:800;font-size:1rem;
+  }
+  .cat .hint{font-size:.78rem;color:var(--muted);margin:4px 0 10px;line-height:1.4}
+  .pill{
+    font-size:.58rem;padding:3px 7px;border-radius:999px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;border:2px solid var(--ink);background:#ffffff;
+  }
+  .pill.ess{background:var(--purple-soft)}
+  .pill.sav{background:var(--green-soft)}
+  .pill.want{background:var(--amber-soft)}
+  .ctrl{display:flex;align-items:center;gap:10px}
+  .step{
+    width:40px;height:40px;border-radius:12px;border:3px solid var(--ink);
+    background:var(--purple-soft);font-size:1.25rem;font-weight:800;color:var(--ink);cursor:pointer;
+    flex:none;line-height:1;font-family:var(--font-display);box-shadow:3px 3px 0 var(--ink);
+    transition:transform .1s,box-shadow .1s;
+  }
+  .step:hover{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--ink)}
+  .step:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+  input[type=range]{
+    flex:1;-webkit-appearance:none;appearance:none;height:12px;border-radius:999px;border:2px solid var(--ink);
+    background:linear-gradient(90deg,var(--purple) 0%,var(--purple) var(--fill,0%),#e5e7eb var(--fill,0%));
+    cursor:pointer;box-shadow:2px 2px 0 var(--ink);
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+    background:var(--bg);border:3px solid var(--ink);cursor:grab;box-shadow:2px 2px 0 var(--ink);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:26px;height:26px;border-radius:50%;background:var(--bg);
+    border:3px solid var(--ink);cursor:grab;box-shadow:2px 2px 0 var(--ink);
+  }
+  .warnrow{color:var(--red);font-size:.76rem;margin-top:8px;font-weight:700}
+  .coming{
+    background:var(--sage);border:3px solid var(--ink);border-radius:16px;
+    padding:14px 16px;font-size:.88rem;margin-bottom:14px;line-height:1.55;
+    box-shadow:var(--shadow);
+  }
+  .coming b{font-family:var(--font-display);font-weight:800}
+
+  .split{
+    display:flex;height:18px;border-radius:999px;overflow:hidden;background:#e5e7eb;
+    margin:8px 0 10px;border:3px solid var(--ink);box-shadow:2px 2px 0 var(--ink);
+  }
+  .seg{transition:width .28s var(--ease);min-width:0}
+  .seg.need{background:var(--purple)} .seg.save{background:var(--green)} .seg.want{background:var(--amber)}
+  .splitleg{display:flex;gap:14px;font-size:.78rem;font-weight:700;flex-wrap:wrap;margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
+  .splitleg b{font-family:var(--font-display);font-weight:800}
+  .dotn{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle;border:1.5px solid var(--ink)}
+  .risks{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 8px}
+  .badge{
+    font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:999px;letter-spacing:.02em;
+    background:#ffffff;border:2px solid var(--ink);box-shadow:2px 2px 0 var(--ink);
+  }
+  .badge.ok{background:var(--green-soft)} .badge.mid{background:var(--amber-soft)} .badge.bad{background:var(--red-soft)}
+
+  .remaining{
+    position:sticky;bottom:8px;background:#ffffff;border:3px solid var(--ink);
+    border-radius:18px;padding:14px 16px;margin-top:16px;
+    display:flex;justify-content:space-between;align-items:center;gap:12px;z-index:5;
+    box-shadow:var(--shadow-lg);
+    flex:none;
+  }
+  @supports (padding: max(0px)) {
+    .remaining{bottom:max(8px, env(safe-area-inset-bottom));}
+  }
+  .remaining .amt{font-family:var(--font-display);font-size:1.4rem;font-weight:800}
+  .remaining .amt.pos{color:var(--green)} .remaining .amt.neg{color:var(--red)}
+  .remaining .lbl{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.7}
+
+  .weekbar{display:flex;gap:8px;margin-bottom:16px}
+  .weekbar .w{
+    flex:1;height:14px;border-radius:999px;background:#e5e7eb;border:2px solid var(--ink);
+    box-shadow:inset 0 0 0 0 var(--ink);position:relative;
+  }
+  .weekbar .w.done{background:var(--green)}
+  .weekbar .w.now{background:var(--purple);animation:pulseBar 1.2s ease-in-out infinite}
+  @keyframes pulseBar{0%,100%{filter:brightness(1)}50%{filter:brightness(1.15)}}
+
+  .event{
+    border:3px solid var(--ink);background:#ffffff;border-radius:18px;
+    padding:16px 18px;margin:14px 0;box-shadow:var(--shadow);position:relative;
+  }
+  .event::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:12px;background:var(--purple);border-right:3px solid var(--ink);
+    border-radius:14px 0 0 14px;
+  }
+  .event.bad::before{background:var(--red)}
+  .event.good::before{background:var(--green)}
+  .event h3{margin-bottom:6px;padding-left:8px}
+  .event p{padding-left:8px}
+  .event .amt{font-family:var(--font-display);font-size:1.45rem;font-weight:800;margin-top:10px;padding-left:8px}
+  .event.bad .amt{color:var(--red)} .event.good .amt{color:var(--green)}
+  .absorb{font-size:.88rem;color:var(--green);margin-top:8px;font-weight:700;padding-left:8px}
+
+  .options{display:grid;gap:10px;margin-top:12px}
+  .opt{
+    text-align:left;border:3px solid var(--ink);background:#ffffff;border-radius:16px;padding:14px 16px;
+    cursor:pointer;font-family:inherit;width:100%;box-shadow:var(--shadow);
+    transition:transform .12s var(--ease),box-shadow .12s var(--ease),background .12s;
+  }
+  .opt:hover:not(:disabled){transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink);background:#fafafa}
+  .opt:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  .opt:focus-visible{outline:3px solid var(--purple);outline-offset:2px}
+  .opt .ot{font-weight:800;display:block;font-family:var(--font-display);font-size:.95rem;text-transform:uppercase;letter-spacing:-.01em}
+  .opt .oc{font-size:.82rem;color:var(--muted);margin-top:4px;line-height:1.4}
+  .opt.danger{background:#ffffff5f5}
+  .opt.danger:hover:not(:disabled){background:var(--red-soft)}
+
+  ul.tips{list-style:none;margin-top:12px}
+  ul.tips li{
+    padding:12px 14px;background:#ffffff;border:2px solid var(--ink);border-radius:14px;
+    margin-bottom:10px;font-size:.92rem;line-height:1.45;box-shadow:3px 3px 0 var(--ink);
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  ul.tips li.good{background:#dcfce7}
+  ul.tips li.warn{background:#fef3c7}
+
+  .howto{
+    display:grid;gap:10px;margin:16px 0 8px;
+  }
+  .howto .step-card{
+    display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:center;
+    background:#ffffff;border:3px solid var(--ink);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);
+  }
+  .howto .num{
+    width:42px;height:42px;border:3px solid var(--ink);border-radius:12px;background:var(--purple-soft);
+    display:grid;place-items:center;font-family:var(--font-display);font-weight:800;font-size:1.1rem;
+    box-shadow:2px 2px 0 var(--ink);
+  }
+  .howto .step-card p{font-size:.9rem;line-height:1.4;margin:0}
+  .howto .step-card strong{font-family:var(--font-display);text-transform:uppercase;font-size:.85rem;display:block;margin-bottom:2px}
+
+  .scoreline{
+    display:flex;justify-content:space-between;padding:10px 0;border-bottom:2px dashed var(--ink);
+    font-size:.92rem;font-weight:600;
+  }
+  .scoreline b{font-family:var(--font-display);font-weight:800}
+  .scorebig{
+    font-family:var(--font-display);font-size:clamp(3.2rem,12vw,4.5rem);font-weight:800;
+    color:var(--ink);line-height:1;letter-spacing:-.04em;margin:8px 0;
+    text-shadow:4px 4px 0 var(--purple-soft);
+  }
+  .score-ring{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:clamp(140px, 22vw, 180px);
+    height:clamp(140px, 22vw, 180px);
+    min-width:140px;min-height:140px;
+    border:4px solid var(--ink);border-radius:50%;
+    background:#ffffff;box-shadow:var(--shadow-lg);margin:8px auto 12px;
+  }
+  .score-ring .scorebig{
+    font-size:clamp(2.4rem, 7vw, 3.4rem);
+    margin:0;
+    text-shadow:none;
+    line-height:1;
+  }
+  .score-ring .score-den{
+    font-size:clamp(.85rem, 2vw, 1.05rem);
+    opacity:.45;
+    font-weight:800;
+  }
+  .cta{
+    margin-top:22px;padding:22px 18px;border-radius:18px;
+    background:var(--bg-dark);color:#ffffff;text-align:center;border:3px solid var(--ink);
+    box-shadow:var(--shadow-lg);
+  }
+  .cta a{color:var(--bg);font-weight:800;text-decoration:underline;text-underline-offset:3px}
+  .muted{color:var(--muted)} .center{text-align:center} .hide{display:none}
+  a{color:var(--purple);font-weight:700;text-underline-offset:3px}
+  a:hover{color:#3f32c7}
+
+  #flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:60}
+  #particles{position:fixed;inset:0;pointer-events:none;z-index:61}
+  
+  #app{
+    flex:1 1 auto;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    min-width:0;
+    width:100%;
+    gap:12px;
+  }
+  .stage > .wrap{
+    flex:1 1 auto;
+  }
+
+  /* Full-page results (Month Survived / Win-Lose) — uses real estate, not a tiny popup */
+  .results-card{
+    width:100%;
+    animation:cardIn .4s var(--ease);
+  }
+  .results-hero{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px 28px;
+    margin-bottom:8px;
+  }
+  .results-identity{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    min-width:min(100%, 280px);
+  }
+  .results-scoreboard{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    margin:8px auto 18px;
+  }
+  .results-grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:20px 28px;
+    align-items:start;
+    margin-top:8px;
+  }
+  @media(max-width:720px){
+    .results-grid{grid-template-columns:1fr;gap:18px}
+    .results-hero{justify-content:center;text-align:center}
+    .results-identity{flex-direction:column;width:100%}
+  }
+  .results-panel{
+    background:#fafafa;
+    border:3px solid var(--ink);
+    border-radius:18px;
+    padding:16px 18px;
+    box-shadow:var(--shadow);
+  }
+  .results-panel h3{
+    margin-bottom:12px;
+    font-size:.88rem;
+    letter-spacing:.06em;
+  }
+  .results-actions{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:22px;
+    position:sticky;
+    bottom:12px;
+    z-index:6;
+  }
+  .results-actions .btn{padding:16px 20px;font-size:1rem}
+
+  /* Large modal (reserved if needed) — roomy, not phone-widget sized */
+  .modal-overlay{
+    position:fixed;inset:0;
+    background:rgba(26,26,29,0.55);
+    backdrop-filter:blur(8px);
+    -webkit-backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;
+    padding:clamp(16px, 4vw, 32px);
+    padding-bottom:max(clamp(16px, 4vw, 32px), env(safe-area-inset-bottom, 0px));
+    z-index:100;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    animation:fadeIn 0.25s var(--ease);
+  }
+  @keyframes fadeIn {
+    from { opacity:0; }
+    to { opacity:1; }
+  }
+  .modal-card{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:24px;
+    box-shadow:var(--shadow-lg);
+    max-width:min(720px, 100%);
+    width:100%;
+    max-height:min(92vh, 92dvh);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+    animation:scaleUp 0.35s var(--ease);
+    padding:clamp(20px, 3.5vw, 32px);
+    margin:auto;
+    flex:none;
+    min-height:0;
+  }
+  .modal-scroll{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+    padding-right:4px;
+  }
+  .modal-actions{
+    flex:0 0 auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    width:100%;
+    padding-top:16px;
+    margin-top:8px;
+    border-top:2px solid rgba(46,46,50,.12);
+    background:var(--card);
+  }
+  @keyframes scaleUp {
+    from { transform:scale(0.96); opacity:0; }
+    to { transform:scale(1); opacity:1; }
+  }
+
+  @keyframes shakeAnim{
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-3px, 1px) rotate(-0.5deg); }
+    20% { transform: translate(2px, -2px) rotate(0.5deg); }
+    30% { transform: translate(-4px, 2px) rotate(-1deg); }
+    40% { transform: translate(4px, -1px) rotate(1deg); }
+    50% { transform: translate(-3px, 3px) rotate(-0.5deg); }
+    60% { transform: translate(3px, -2px) rotate(0.5deg); }
+    70% { transform: translate(-2px, 1px) rotate(-0.5deg); }
+    80% { transform: translate(2px, 2px) rotate(0deg); }
+    90% { transform: translate(-1px, -1px) rotate(0deg); }
+  }
+  .wrap.shake{animation:shakeAnim .45s cubic-bezier(.36,.07,.19,.97)}
+  @keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+  .card-in{animation:cardIn .4s var(--ease)}
+  @keyframes cardPop{0%{transform:scale(0) rotate(-14deg)}70%{transform:scale(1.1) rotate(2deg)}100%{transform:scale(1)}}
+  .card-pop{display:inline-block;animation:cardPop .5s var(--ease)}
+  @keyframes pulseUpK{0%{transform:scale(1)}30%{transform:scale(1.14);color:var(--green)}100%{transform:scale(1)}}
+  @keyframes pulseDownK{0%{transform:scale(1)}30%{transform:scale(1.14);color:var(--red)}100%{transform:scale(1)}}
+  .pulseUp{animation:pulseUpK .55s ease;display:inline-block}
+  .pulseDown{animation:pulseDownK .55s ease;display:inline-block}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .floaty{animation:floaty 2.8s ease-in-out infinite}
+  @media (prefers-reduced-motion:reduce){
+    .card-in,.card-pop,.pulseUp,.pulseDown,.wrap.shake,.ticker-track,.floaty,.weekbar .w.now{animation:none!important}
+    .seg,.btn,.opt,.persona,.step,.ghost{transition:none!important}
+    .modal-overlay,.modal-card{animation:none!important}
+  }
+
+  .hero{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;
+    background:#ffffff;border:3px solid var(--ink);border-radius:18px;
+    padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow);
+    flex:none;
+  }
+  .heroAvatar,.heroJar{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .moodlbl{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .jarlbl{font-size:.72rem;font-weight:800;font-family:var(--font-display);color:var(--green)}
+  .whead{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+  .wevicon{
+    margin-left:auto;font-size:2.8rem;line-height:1;
+    width:72px;height:72px;display:grid;place-items:center;
+    background:var(--purple-soft);border:3px solid var(--ink);border-radius:18px;box-shadow:var(--shadow);
+  }
+  .foot{
+    margin-top:28px;padding:14px 16px;border:3px solid var(--ink);border-radius:16px;
+    background:#ffffff;box-shadow:var(--shadow);
+    display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;
+    font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;text-align:center;
+  }
+  #cats{margin-top:6px}
+  .section-label{
+    font-family:var(--font-display);font-size:.85rem;font-weight:800;letter-spacing:.06em;
+    text-transform:uppercase;margin:18px 0 8px;display:flex;align-items:center;gap:10px;
+  }
+  .section-label::after{content:"";flex:1;height:3px;background:var(--ink);opacity:.15}
+  .xp-bar{
+    height:10px;border:2px solid var(--ink);border-radius:999px;background:#e5e7eb;overflow:hidden;margin-top:6px;
+  }
+  .xp-bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--purple),#a78bfa);width:0%}
+  .panel-title{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px;
+  }
+  .lives{
+    display:inline-flex;gap:4px;font-size:1rem;
+  }
+  .deco-coin{
+    position:fixed;pointer-events:none;z-index:0;opacity:.12;font-size:clamp(4rem,12vw,8rem);
+    font-family:var(--font-display);font-weight:800;user-select:none;
+  }
+  .deco-coin.c1{top:12%;left:2%;transform:rotate(-12deg)}
+  .deco-coin.c2{bottom:18%;right:3%;transform:rotate(18deg)}
+  .mode-chip{
+    display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:#ffffff;
+    border-radius:999px;padding:6px 12px;font-size:.7rem;font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;
+  }
+  .win-banner{
+    font-family:var(--font-display);font-size:clamp(1.8rem,6vw,2.6rem);font-weight:800;
+    text-transform:uppercase;letter-spacing:-.03em;
+  }
+  .badge-shelf{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+
+  .ico{display:inline-block;vertical-align:-.2em;flex:none}
+  .ico-lg{display:block}
+  .picon{
+    width:52px;height:52px;border:3px solid var(--ink);border-radius:14px;
+    display:grid;place-items:center;background:var(--purple-soft);
+    margin-bottom:12px;box-shadow:2px 2px 0 var(--ink);padding:6px;
+  }
+  .picon .ico{width:100%;height:100%}
+  .picon svg{width:100%;height:100%}
+  .wevicon .ico, .wevicon svg{width:48px;height:48px}
+  .badge .ico{width:14px;height:14px;margin-right:4px;vertical-align:-.15em}
+  .opt .ot{display:flex;align-items:center;gap:8px}
+  .opt .ot .ico{width:22px;height:22px}
+  .cathead .ico{width:18px;height:18px;margin-right:2px}
+  .mark{padding:0!important;overflow:hidden}
+  .mark svg, .mark .ico{width:100%;height:100%}
+  .btn .ico{width:18px;height:18px;margin-right:6px;vertical-align:-.25em}
+  .btn.inline-ico{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .ghost .ico{width:16px;height:16px}
+  .ghost.icon-only{display:inline-flex;align-items:center;justify-content:center;padding:10px}
+  .ghost.icon-only .ico{margin:0;width:18px;height:18px}
+  .coming-row{display:flex;gap:8px;align-items:flex-start;margin-top:6px}
+  .coming-row .ico{width:18px;height:18px;margin-top:2px}
+  .badge-shelf .badge{display:inline-flex;align-items:center;gap:4px}
+  .heroAvatar svg, .heroJar svg{display:block}
+  .card-banner {
+    margin: calc(-1 * clamp(18px, 3.5vw, 28px)) calc(-1 * clamp(18px, 3.5vw, 28px)) 22px;
+    border-bottom: 3px solid var(--ink);
+    overflow: hidden;
+    border-radius: 19px 19px 0 0;
+    flex:none;
+    line-height:0;
+    background:var(--purple-soft);
+    min-height:180px;
+    max-height:min(48vw, 300px);
+  }
+  .card-banner img{
+    width:100%;
+    height:100%;
+    min-height:180px;
+    max-height:min(48vw, 300px);
+    object-fit:cover;
+    object-position:center 38%;
+    display:block;
+  }
+  @media(min-width: 720px) {
+    .card-banner, .card-banner img{
+      min-height:240px;
+      max-height:320px;
+    }
+  }
+  .persona-avatar{
+    width:100%;
+    aspect-ratio:1;
+    max-width:140px;
+    border:3px solid var(--ink);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:3px 3px 0 var(--ink);
+    margin-bottom:14px;
+    background:var(--purple-soft);
+    flex:none;
+  }
+  .persona-avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .persona .picon.persona-avatar{
+    width:100%;
+    max-width:140px;
+    height:auto;
+    aspect-ratio:1;
+    padding:0;
+    margin-bottom:14px;
+  }
+  @media(min-width:800px){
+    .persona-avatar, .persona .picon.persona-avatar{max-width:100%;}
+  }
+  /* Satisfying bouncy tap interactions */
+  .btn, .opt, .step, .persona, .ghost {
+    transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease), background 0.15s, border-color 0.15s !important;
+  }
+  .btn:active:not(:disabled), .opt:active:not(:disabled), .step:active, .persona:active, .ghost:active {
+    transform: scale(0.94) translate(2px, 2px) !important;
+    box-shadow: 1px 1px 0 var(--ink) !important;
+  }
+  .avatar-container {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+  }
+  .scroll-y {
+    /* Natural document flow by default — don't trap content in a short pane */
+    flex: 1 1 auto;
+    overflow: visible;
+    min-height: 0;
+    padding-right: 0;
+  }
+  /* Only use nested scroll when a screen explicitly needs a fixed-height pane */
+  .card-fill > .scroll-y.scroll-pane {
+    overflow-y: auto;
+    max-height: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+  }
+  /* Custom thin scrollbar */
+  .scroll-y::-webkit-scrollbar, .modal-scroll::-webkit-scrollbar, #cats::-webkit-scrollbar, ul.tips::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scroll-y::-webkit-scrollbar-track, .modal-scroll::-webkit-scrollbar-track, #cats::-webkit-scrollbar-track, ul.tips::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+  }
+  .scroll-y::-webkit-scrollbar-thumb, .modal-scroll::-webkit-scrollbar-thumb, #cats::-webkit-scrollbar-thumb, ul.tips::-webkit-scrollbar-thumb {
+    background: var(--purple);
+    border-radius: 3px;
+    border: 1px solid var(--card);
+  }
+
+  /* Touch targets & a11y */
+  button:focus-visible, a:focus-visible, input:focus-visible, .persona:focus-visible, .opt:focus-visible {
+    outline:3px solid var(--purple);
+    outline-offset:3px;
+  }
+  @media (max-width:420px){
+    .remaining{flex-wrap:wrap}
+    .remaining .btn{width:100%}
+    .hud{gap:8px}
+    .stat{padding:10px}
+    .stat .val{font-size:.95rem}
+  }
+  .howto{margin:18px 0 12px}
+  .howto .step-card{padding:14px 16px}
+  .section-label{margin:22px 0 12px;font-size:.92rem}
+  .cat{padding:16px;margin:0 0 12px}
+  .event{padding:18px 20px;margin:16px 0}
+  .opt{padding:16px 18px}
+  .event .amt{font-size:clamp(1.5rem, 4vw, 1.85rem)}
+  ul.tips li{padding:14px 16px;font-size:.95rem;margin-bottom:12px}
+  .scoreline{font-size:1rem;padding:12px 0}
+  .hud{gap:12px;margin-bottom:16px}
+  .stat{padding:14px 16px}
+  .stat .val{font-size:1.15rem}
+  .hero{padding:14px 18px;margin-bottom:16px}
+  .foot{
+    margin-top:18px !important;
+    opacity:.9;
+  }
+</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" id="icon-sprite">
+<symbol id="i-logo-mark" viewBox="0 0 32 32"><rect x="2" y="2" width="28" height="28" rx="6" fill="#6c5ce7"/><circle cx="16" cy="14" r="6" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M13 12.5c0-1.2 1.2-2 3-2s3 .8 3 2-1 1.5-3 1.5-3 .5-3 1.5 1.2 2 3 2 3-.8 3-2" fill="none" stroke="#2d3436" stroke-width="1.4" stroke-linecap="round"/><path d="M8 24h16" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-sound-on" viewBox="0 0 32 32"><path d="M6 12h4l6-5v18l-6-5H6z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5" stroke-linejoin="round"/><path d="M20 12c1.5 1.2 2.5 2.8 2.5 4s-1 2.8-2.5 4M23 9c2.5 2 4 4.5 4 7s-1.5 5-4 7" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-sound-off" viewBox="0 0 32 32"><path d="M6 12h4l6-5v18l-6-5H6z" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5" stroke-linejoin="round"/><path d="M21 12l6 8M27 12l-6 8" stroke="#e17055" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="i-chevron-right" viewBox="0 0 32 32"><path d="M12 8l8 8-8 8" fill="none" stroke="#2d3436" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-check" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#00b894"/><path d="M10 16l4 4 8-8" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-cross" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#e17055"/><path d="M12 12l8 8M20 12l-8 8" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/></symbol>
+<symbol id="i-warn" viewBox="0 0 32 32"><path d="M16 4L28 26H4L16 4z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5" stroke-linejoin="round"/><path d="M16 12v6" stroke="#2d3436" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="22" r="1.4" fill="#2d3436"/></symbol>
+<symbol id="i-spark" viewBox="0 0 32 32"><path d="M16 3l2.2 8.2L26 14l-7.8 2.8L16 25l-2.2-8.2L6 14l7.8-2.8L16 3z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+<symbol id="i-star" viewBox="0 0 32 32"><path d="M16 4l3 7h7l-5.5 4.5 2 7.5L16 19l-6.5 4 2-7.5L6 11h7z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+<symbol id="i-coin" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="8" fill="none" stroke="#2d3436" stroke-width="1.2" opacity=".35"/><path d="M14 11.5c0-1 1-1.5 2.2-1.5s2.2.5 2.2 1.5-.8 1.2-2.2 1.2-2.2.4-2.2 1.3.9 1.5 2.2 1.5 2.2-.5 2.2-1.5" fill="none" stroke="#2d3436" stroke-width="1.4" stroke-linecap="round"/><path d="M16.2 10v12" stroke="#2d3436" stroke-width="1.3" stroke-linecap="round"/></symbol>
+<symbol id="i-rand" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#6c5ce7"/><path d="M13 11.5c0-1.1 1.1-1.8 2.8-1.8s2.8.7 2.8 1.8-.9 1.3-2.8 1.3-2.8.5-2.8 1.5 1 1.8 2.8 1.8 2.8-.7 2.8-1.8" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/></symbol>
+<symbol id="i-play" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><path d="M13 10l10 6-10 6V10z" fill="#ffffff"/></symbol>
+<symbol id="i-reset" viewBox="0 0 32 32"><path d="M8 12a9 9 0 1 1-1 5" fill="none" stroke="#2d3436" stroke-width="2.2" stroke-linecap="round"/><path d="M8 7v6h6" fill="none" stroke="#2d3436" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-clear" viewBox="0 0 32 32"><rect x="7" y="9" width="18" height="16" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M5 9h22M12 9V7h8v2M13 14v6M19 14v6" stroke="#2d3436" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-trophy" viewBox="0 0 32 32"><path d="M10 6h12v6a6 6 0 0 1-12 0V6z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M10 8H7a3 3 0 0 0 3 5M22 8h3a3 3 0 0 1-3 5" fill="none" stroke="#2d3436" stroke-width="1.5"/><path d="M14 18h4v3h-4zM11 26h10v2H11z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-shield" viewBox="0 0 32 32"><path d="M16 3l11 4v8c0 7-5 11-11 13C10 26 5 22 5 15V7l11-4z" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><path d="M12 16l3 3 5-6" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-credit" viewBox="0 0 32 32"><rect x="4" y="9" width="24" height="15" rx="3" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><rect x="4" y="13" width="24" height="4" fill="#2d3436"/><rect x="8" y="20" width="8" height="2" rx="1" fill="#fdcb6e"/></symbol>
+<symbol id="i-split" viewBox="0 0 32 32"><rect x="3" y="12" width="8" height="8" rx="1" fill="#6c5ce7"/><rect x="12" y="12" width="8" height="8" rx="1" fill="#00b894"/><rect x="21" y="12" width="8" height="8" rx="1" fill="#fdcb6e"/><path d="M3 10h26" stroke="#2d3436" stroke-width="1.5"/></symbol>
+<symbol id="i-weeks" viewBox="0 0 32 32"><rect x="4" y="8" width="5" height="16" rx="1" fill="#00b894" stroke="#2d3436" stroke-width="1"/><rect x="11" y="8" width="5" height="16" rx="1" fill="#00b894" stroke="#2d3436" stroke-width="1"/><rect x="18" y="8" width="5" height="16" rx="1" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/><rect x="25" y="8" width="3" height="16" rx="1" fill="#eee9ff" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-persona-student" viewBox="0 0 32 32"><circle cx="16" cy="12" r="6" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M6 28c1-7 5-10 10-10s9 3 10 10" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><path d="M8 10l8-5 8 5" fill="none" stroke="#2d3436" stroke-width="1.8" stroke-linecap="round"/><rect x="20" y="16" width="7" height="5" rx="1" fill="#fdcb6e" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-persona-family" viewBox="0 0 32 32"><circle cx="11" cy="12" r="4.5" fill="#eee9ff" stroke="#2d3436" stroke-width="1.3"/><circle cx="21" cy="12" r="4.5" fill="#eee9ff" stroke="#2d3436" stroke-width="1.3"/><circle cx="16" cy="18" r="3.5" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.3"/><path d="M4 28c1-5 4-7 7-7s5 1 5 3c0-2 2-4 6-4s6 3 6 8" fill="#00b894" stroke="#2d3436" stroke-width="1.3"/></symbol>
+<symbol id="i-persona-tight" viewBox="0 0 32 32"><circle cx="16" cy="12" r="6" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M6 28c1-7 5-10 10-10s9 3 10 10" fill="#e17055" stroke="#2d3436" stroke-width="1.5"/><path d="M16 3v3M16 26v3M3 16h3M26 16h3M6 6l2 2M24 24l2 2M24 6l-2 2M6 26l2-2" stroke="#fdcb6e" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-diff-chilled" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#d4f5ec" stroke="#2d3436" stroke-width="1.5"/><path d="M10 18c2 3 10 3 12 0" fill="none" stroke="#00b894" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="13" r="1.5" fill="#2d3436"/><circle cx="20" cy="13" r="1.5" fill="#2d3436"/></symbol>
+<symbol id="i-diff-realistic" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><circle cx="16" cy="16" r="8" fill="none" stroke="#6c5ce7" stroke-width="2"/><circle cx="16" cy="16" r="2.5" fill="#6c5ce7"/><path d="M16 6v3M16 23v3M6 16h3M23 16h3" stroke="#2d3436" stroke-width="1.5" stroke-linecap="round"/></symbol>
+<symbol id="i-diff-brutal" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#e17055" stroke="#2d3436" stroke-width="1.5"/><path d="M12 10c0-2 2-3 4-3s4 1 4 3c0 4-4 4-4 7" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="22" r="1.5" fill="#ffffff"/></symbol>
+<symbol id="i-mood-happy" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#d4f5ec" stroke="#2d3436" stroke-width="2"/><path d="M10 14q2.5-3 5 0M17 14q2.5-3 5 0" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/><path d="M11 19q5 5 10 0" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-mood-neutral" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#eee9ff" stroke="#2d3436" stroke-width="2"/><circle cx="12.5" cy="14" r="1.8" fill="#2d3436"/><circle cx="19.5" cy="14" r="1.8" fill="#2d3436"/><path d="M11 20h10" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-mood-worried" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fff5db" stroke="#2d3436" stroke-width="2"/><circle cx="12.5" cy="14" r="1.8" fill="#2d3436"/><circle cx="19.5" cy="14" r="1.8" fill="#2d3436"/><path d="M11 21q5-4 10 0" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-mood-stressed" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fbe9e5" stroke="#2d3436" stroke-width="2"/><circle cx="12.5" cy="14" r="1.8" fill="#2d3436"/><circle cx="19.5" cy="14" r="1.8" fill="#2d3436"/><path d="M11 22q5-5 10 0" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="10" r="3" fill="#74b9ff" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-mood-celebrating" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#d4f5ec" stroke="#2d3436" stroke-width="2"/><path d="M10 14q2.5-3 5 0M17 14q2.5-3 5 0" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/><path d="M11 19q5 5 10 0" fill="#e17055" stroke="#2d3436" stroke-width="1.5" stroke-linecap="round"/><path d="M8 6l8-4 4 8z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-rent" viewBox="0 0 32 32"><path d="M5 15l11-9 11 9" fill="none" stroke="#2d3436" stroke-width="2" stroke-linejoin="round"/><path d="M8 14v12h16V14" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><rect x="13" y="19" width="6" height="7" fill="#6c5ce7"/></symbol>
+<symbol id="i-groceries" viewBox="0 0 32 32"><path d="M8 10h16l-1.5 14H9.5L8 10z" fill="#00b894" stroke="#2d3436" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 10V8a4 4 0 0 1 8 0v2" fill="none" stroke="#2d3436" stroke-width="1.8"/></symbol>
+<symbol id="i-transport" viewBox="0 0 32 32"><rect x="5" y="12" width="22" height="10" rx="3" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><circle cx="10" cy="23" r="2.5" fill="#2d3436"/><circle cx="22" cy="23" r="2.5" fill="#2d3436"/><path d="M8 12l2-5h8l2 5" fill="#eee9ff" stroke="#2d3436" stroke-width="1.2"/></symbol>
+<symbol id="i-blacktax" viewBox="0 0 32 32"><circle cx="16" cy="10" r="5" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M6 28c1-7 5-10 10-10s9 3 10 10" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M22 8h6v4h-4l4 5" fill="none" stroke="#00b894" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-airtime" viewBox="0 0 32 32"><rect x="10" y="4" width="12" height="24" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><circle cx="16" cy="24" r="1.2" fill="#2d3436"/><path d="M13 10h6M13 14h6M13 18h4" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/></symbol>
+<symbol id="i-medical" viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20" rx="4" fill="#ffffff" stroke="#2d3436" stroke-width="1.5"/><path d="M16 10v12M10 16h12" stroke="#e17055" stroke-width="3" stroke-linecap="round"/></symbol>
+<symbol id="i-funeral" viewBox="0 0 32 32"><path d="M16 6c0 0-6 4-6 10a6 6 0 0 0 12 0c0-6-6-10-6-10z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><rect x="14.5" y="16" width="3" height="10" fill="#2d3436"/><path d="M10 26h12" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-debt" viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="16" rx="2" fill="#e17055" stroke="#2d3436" stroke-width="1.5"/><path d="M9 16h14M20 12l4 4-4 4" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-emergency" viewBox="0 0 32 32"><path d="M16 3l11 4v8c0 7-5 11-11 13C10 26 5 22 5 15V7l11-4z" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><circle cx="16" cy="15" r="4" fill="#ffffff" opacity=".9"/><path d="M14.5 13.5c0-.8.7-1.3 1.6-1.3s1.6.5 1.6 1.3-.6.9-1.6.9-1.6.3-1.6 1 .7 1.3 1.6 1.3 1.6-.5 1.6-1.3" fill="none" stroke="#00b894" stroke-width="1.1" stroke-linecap="round"/></symbol>
+<symbol id="i-stokvel" viewBox="0 0 32 32"><circle cx="11" cy="14" r="5" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.3"/><circle cx="21" cy="14" r="5" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.3"/><circle cx="16" cy="21" r="5" fill="#00b894" stroke="#2d3436" stroke-width="1.3"/></symbol>
+<symbol id="i-plan" viewBox="0 0 32 32"><rect x="6" y="5" width="20" height="22" rx="2" fill="#ffffff" stroke="#2d3436" stroke-width="1.5"/><path d="M10 11h12M10 16h12M10 21h8" stroke="#6c5ce7" stroke-width="1.8" stroke-linecap="round"/><circle cx="22" cy="21" r="4" fill="#00b894" stroke="#2d3436" stroke-width="1"/><path d="M20.5 21l1 1 2-2" fill="none" stroke="#ffffff" stroke-width="1.2"/></symbol>
+<symbol id="i-goal" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="#6c5ce7" stroke-width="2"/><circle cx="16" cy="16" r="7" fill="none" stroke="#6c5ce7" stroke-width="2"/><circle cx="16" cy="16" r="2.5" fill="#e17055"/></symbol>
+<symbol id="i-homeins" viewBox="0 0 32 32"><path d="M5 15l11-9 11 9" fill="none" stroke="#2d3436" stroke-width="2"/><path d="M8 14v12h16V14" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M16 17l5 2v3c0 2.5-2 4-5 4.5-3-.5-5-2-5-4.5v-3l5-2z" fill="#00b894" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-fun" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M11 14h.1M21 14h.1" stroke="#2d3436" stroke-width="3" stroke-linecap="round"/><path d="M11 19q5 4 10 0" fill="none" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-car" viewBox="0 0 32 32"><path d="M5 18l2-6h18l2 6" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><rect x="4" y="18" width="24" height="6" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><circle cx="10" cy="24" r="2.5" fill="#2d3436"/><circle cx="22" cy="24" r="2.5" fill="#2d3436"/></symbol>
+<symbol id="i-wrench" viewBox="0 0 32 32"><path d="M20 6a5 5 0 0 0-6 6l-8 8 3 3 8-8a5 5 0 0 0 6-6l-4 4-3-3 4-4z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+<symbol id="i-tyre" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="#2d3436"/><circle cx="16" cy="16" r="6" fill="#eee9ff" stroke="#fdcb6e" stroke-width="2"/><circle cx="16" cy="16" r="2" fill="#2d3436"/></symbol>
+<symbol id="i-taxi" viewBox="0 0 32 32"><rect x="4" y="12" width="24" height="10" rx="3" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M8 12l2-5h12l2 5" fill="#eee9ff" stroke="#2d3436" stroke-width="1.2"/><circle cx="10" cy="24" r="2.2" fill="#2d3436"/><circle cx="22" cy="24" r="2.2" fill="#2d3436"/><rect x="13" y="5" width="6" height="3" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-fridge" viewBox="0 0 32 32"><rect x="9" y="4" width="14" height="24" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M9 14h14" stroke="#2d3436" stroke-width="1.5"/><path d="M12 8v3M12 18v4" stroke="#6c5ce7" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-plumb" viewBox="0 0 32 32"><path d="M10 4v10a6 6 0 0 0 12 0V4" fill="none" stroke="#6c5ce7" stroke-width="2.5" stroke-linecap="round"/><path d="M8 4h16" stroke="#2d3436" stroke-width="2.5" stroke-linecap="round"/><path d="M16 20v6M13 26h6" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-appliance" viewBox="0 0 32 32"><rect x="6" y="6" width="20" height="20" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><circle cx="16" cy="17" r="6" fill="#ffffff" stroke="#2d3436" stroke-width="1.5"/><circle cx="16" cy="17" r="2" fill="#6c5ce7"/><circle cx="11" cy="10" r="1.2" fill="#e17055"/><circle cx="15" cy="10" r="1.2" fill="#fdcb6e"/></symbol>
+<symbol id="i-petrol" viewBox="0 0 32 32"><path d="M8 6h10v20H8z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><path d="M18 10h3l3 4v8h-3" fill="none" stroke="#2d3436" stroke-width="1.8" stroke-linejoin="round"/><rect x="10" y="9" width="6" height="5" fill="#eee9ff" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-hospital" viewBox="0 0 32 32"><rect x="5" y="8" width="22" height="18" rx="2" fill="#ffffff" stroke="#2d3436" stroke-width="1.5"/><path d="M12 12h8v10h-8z" fill="#eee9ff" stroke="#2d3436" stroke-width="1.2"/><path d="M16 14v6M13 17h6" stroke="#e17055" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="i-dental" viewBox="0 0 32 32"><path d="M10 8c0-2 2-4 6-4s6 2 6 4c0 4-2 6-2 10 0 2-1 4-4 4s-4-2-4-4c0-4-2-6-2-10z" fill="#ffffff" stroke="#2d3436" stroke-width="1.5"/></symbol>
+<symbol id="i-family" viewBox="0 0 32 32"><circle cx="11" cy="11" r="4" fill="#eee9ff" stroke="#2d3436" stroke-width="1.2"/><circle cx="21" cy="11" r="4" fill="#eee9ff" stroke="#2d3436" stroke-width="1.2"/><circle cx="16" cy="17" r="3" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.2"/><path d="M5 28c1-5 4-7 6-7 2 0 3 1 5 1s3-1 5-1c2 0 5 2 6 7" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.2"/></symbol>
+<symbol id="i-candle" viewBox="0 0 32 32"><rect x="13" y="12" width="6" height="14" rx="1" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.3"/><path d="M16 12c0 0-3-3-1-6 3 1 4 4 1 6z" fill="#e17055" stroke="#2d3436" stroke-width="1"/><path d="M8 26h16" stroke="#2d3436" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-ring" viewBox="0 0 32 32"><circle cx="16" cy="18" r="8" fill="none" stroke="#fdcb6e" stroke-width="3"/><circle cx="16" cy="18" r="8" fill="none" stroke="#2d3436" stroke-width="1.2"/><path d="M13 10l3-5 3 5z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-school" viewBox="0 0 32 32"><path d="M4 14l12-6 12 6-12 6L4 14z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><path d="M10 17v5c2 2 10 2 12 0v-5" fill="none" stroke="#2d3436" stroke-width="1.5"/><path d="M26 14v8" stroke="#fdcb6e" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-phone" viewBox="0 0 32 32"><rect x="10" y="4" width="12" height="24" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M12 8l8 10M12 18l6-4" stroke="#e17055" stroke-width="1.5"/><circle cx="16" cy="24" r="1" fill="#2d3436"/></symbol>
+<symbol id="i-alert" viewBox="0 0 32 32"><path d="M16 5l12 20H4L16 5z" fill="#e17055" stroke="#2d3436" stroke-width="1.5"/><path d="M16 13v6" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/><circle cx="16" cy="22" r="1.3" fill="#ffffff"/></symbol>
+<symbol id="i-geyser" viewBox="0 0 32 32"><rect x="10" y="6" width="12" height="16" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M14 22v4M18 22v4M12 26h8" stroke="#2d3436" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="12" r="2" fill="#6c5ce7"/></symbol>
+<symbol id="i-home" viewBox="0 0 32 32"><path d="M5 15l11-9 11 9" fill="none" stroke="#2d3436" stroke-width="2"/><path d="M8 14v12h16V14" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><rect x="13" y="19" width="6" height="7" fill="#6c5ce7"/></symbol>
+<symbol id="i-hustle" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><path d="M12 16l3 3 6-7" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-refund" viewBox="0 0 32 32"><path d="M16 6v4M8 10l-3 3 3 3M24 16a8 8 0 1 1-2-5.5" fill="none" stroke="#6c5ce7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 8v5h-5" fill="none" stroke="#6c5ce7" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-overtime" viewBox="0 0 32 32"><rect x="6" y="8" width="20" height="16" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M6 12h20" stroke="#2d3436" stroke-width="1.5"/><circle cx="16" cy="18" r="4" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.5"/><path d="M16 16v2l2 1" stroke="#2d3436" stroke-width="1.3" stroke-linecap="round"/></symbol>
+<symbol id="i-quiet" viewBox="0 0 32 32"><path d="M8 14c0-4 3-7 8-7s8 3 8 7v2c0 2 1 3 2 4H6c1-1 2-2 2-4v-2z" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M13 23a3 3 0 0 0 6 0" fill="none" stroke="#2d3436" stroke-width="1.5"/></symbol>
+<symbol id="i-gift" viewBox="0 0 32 32"><rect x="6" y="14" width="20" height="12" rx="1" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><rect x="5" y="10" width="22" height="5" rx="1" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M16 10v16" stroke="#e17055" stroke-width="2"/></symbol>
+<symbol id="i-sars" viewBox="0 0 32 32"><rect x="7" y="5" width="18" height="22" rx="1" fill="#ffffff" stroke="#2d3436" stroke-width="1.5"/><path d="M11 10h10M11 14h10M11 18h7" stroke="#2d3436" stroke-width="1.3" stroke-linecap="round"/><path d="M12 22h8l-1 3h-6l-1-3z" fill="#00b894" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-treat" viewBox="0 0 32 32"><path d="M6 18c0-6 4-10 10-10s10 4 10 10" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M6 18h20v4c0 2-2 4-4 4H10c-2 0-4-2-4-4v-4z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/></symbol>
+<symbol id="i-snap" viewBox="0 0 32 32"><rect x="6" y="8" width="20" height="16" rx="2" fill="#e17055" stroke="#2d3436" stroke-width="1.5"/><path d="M10 14h12M10 18h8" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/></symbol>
+<symbol id="i-penalty" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="#e17055" stroke="#2d3436" stroke-width="1.5"/><path d="M16 9v8" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/><circle cx="16" cy="21" r="1.5" fill="#ffffff"/></symbol>
+<symbol id="i-festive" viewBox="0 0 32 32"><path d="M16 8l-8 16h16L16 8z" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><path d="M10 18h12M12 22h8" stroke="#ffffff" stroke-width="1.2"/><circle cx="16" cy="5" r="2" fill="#fdcb6e" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-schoolfees" viewBox="0 0 32 32"><path d="M4 14l12-6 12 6-12 6L4 14z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M10 17v5c3 2 9 2 12 0v-5" fill="none" stroke="#2d3436" stroke-width="1.5"/></symbol>
+<symbol id="i-winter" viewBox="0 0 32 32"><path d="M16 4v24M6 10l20 12M26 10L6 22" stroke="#6c5ce7" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="16" r="3" fill="#fdcb6e" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-licence" viewBox="0 0 32 32"><rect x="4" y="8" width="24" height="16" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><circle cx="12" cy="16" r="4" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/><path d="M18 13h6M18 17h5M18 21h4" stroke="#2d3436" stroke-width="1.3" stroke-linecap="round"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 32 32"><rect x="5" y="7" width="22" height="20" rx="2" fill="#ffffff" stroke="#2d3436" stroke-width="1.5"/><path d="M5 13h22M11 4v6M21 4v6" stroke="#2d3436" stroke-width="1.5" stroke-linecap="round"/><rect x="9" y="17" width="4" height="4" fill="#6c5ce7"/><rect x="15" y="17" width="4" height="4" fill="#00b894"/></symbol>
+<symbol id="i-goal-dec" viewBox="0 0 32 32"><path d="M16 9l-5 11h10L16 9z" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><rect x="10" y="24" width="12" height="3" fill="#fdcb6e" stroke="#2d3436" stroke-width="1"/><circle cx="16" cy="6" r="2" fill="#e17055"/></symbol>
+<symbol id="i-goal-study" viewBox="0 0 32 32"><path d="M5 12l11-5 11 5-11 5L5 12z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><path d="M9 14v6c3 2 11 2 14 0v-6" fill="none" stroke="#2d3436" stroke-width="1.5"/><path d="M24 12v8" stroke="#fdcb6e" stroke-width="2"/></symbol>
+<symbol id="i-goal-car" viewBox="0 0 32 32"><path d="M5 18l2-6h18l2 6" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><rect x="4" y="18" width="24" height="5" rx="2" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><circle cx="10" cy="24" r="2.2" fill="#2d3436"/><circle cx="22" cy="24" r="2.2" fill="#2d3436"/></symbol>
+<symbol id="i-goal-home" viewBox="0 0 32 32"><path d="M5 15l11-9 11 9" fill="none" stroke="#2d3436" stroke-width="2"/><path d="M8 14v12h16V14" fill="#6c5ce7" stroke="#2d3436" stroke-width="1.5"/><rect x="13" y="19" width="6" height="7" fill="#fdcb6e"/></symbol>
+<symbol id="i-badge-long12" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M16 10c0 0-4 3-4 7h8c0-4-4-7-4-7z" fill="#00b894" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-badge-long24" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M10 20c2-8 4-10 6-10s4 2 6 10" fill="#00b894" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-badge-long50" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M8 20l4-8h8l4 8H8z" fill="#eee9ff" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-badge-long100" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><circle cx="16" cy="16" r="5" fill="#6c5ce7"/><circle cx="16" cy="16" r="2" fill="#ffffff"/></symbol>
+<symbol id="i-badge-balanced" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M8 16h16M16 10v12M10 12l-2 4 2 4M22 12l2 4-2 4" fill="none" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/></symbol>
+<symbol id="i-badge-brutal12" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M12 20c1-6 2-8 4-8s3 2 4 8" fill="#e17055" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-badge-comeback" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M10 18c0-4 3-7 6-7s5 2 6 5" fill="none" stroke="#6c5ce7" stroke-width="1.8" stroke-linecap="round"/><path d="M20 12v4h4" fill="none" stroke="#6c5ce7" stroke-width="1.8"/></symbol>
+<symbol id="i-badge-janworry" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M12 20l4-10 2 4h4l-6 10-2-4h-2z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-badge-build_dec" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M16 9l-5 11h10L16 9z" fill="#00b894" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-badge-build_study" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M8 14l8-3 8 3-8 3-8-3z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-badge-build_car" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M9 17l1-3h12l1 3H9z" fill="#00b894" stroke="#2d3436" stroke-width="1"/><circle cx="12" cy="20" r="1.5" fill="#2d3436"/><circle cx="20" cy="20" r="1.5" fill="#2d3436"/></symbol>
+<symbol id="i-badge-build_home" viewBox="0 0 32 32"><circle cx="16" cy="16" r="13" fill="#fdcb6e" stroke="#2d3436" stroke-width="2"/><circle cx="16" cy="16" r="10" fill="#ffffff" stroke="#6c5ce7" stroke-width="1.2"/><path d="M10 18l6-5 6 5v6H10v-6z" fill="#6c5ce7" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-action-fund" viewBox="0 0 32 32"><path d="M16 4l10 4v7c0 6-4 10-10 12C10 25 6 21 6 15V8l10-4z" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><path d="M12 16h8M16 12v8" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-action-cut" viewBox="0 0 32 32"><circle cx="11" cy="10" r="3" fill="none" stroke="#2d3436" stroke-width="1.5"/><circle cx="11" cy="22" r="3" fill="none" stroke="#2d3436" stroke-width="1.5"/><path d="M13.5 12l10 8M13.5 20l10-8" stroke="#e17055" stroke-width="2" stroke-linecap="round"/></symbol>
+<symbol id="i-action-goal" viewBox="0 0 32 32"><circle cx="16" cy="16" r="10" fill="none" stroke="#6c5ce7" stroke-width="2"/><circle cx="16" cy="16" r="3" fill="#e17055"/></symbol>
+<symbol id="i-action-credit" viewBox="0 0 32 32"><rect x="4" y="9" width="24" height="15" rx="2" fill="#e17055" stroke="#2d3436" stroke-width="1.5"/><rect x="4" y="13" width="24" height="3" fill="#2d3436"/></symbol>
+<symbol id="i-action-save" viewBox="0 0 32 32"><rect x="8" y="6" width="16" height="20" rx="1" fill="#00b894" stroke="#2d3436" stroke-width="1.5"/><path d="M12 6v4h8V6" fill="#eee9ff" stroke="#2d3436" stroke-width="1"/><path d="M12 16h8M12 20h5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/></symbol>
+<symbol id="i-action-debt" viewBox="0 0 32 32"><path d="M8 16h16M18 10l6 6-6 6" fill="none" stroke="#6c5ce7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-action-treat" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M11 15h.1M21 15h.1" stroke="#2d3436" stroke-width="2.5" stroke-linecap="round"/><path d="M11 19q5 4 10 0" fill="none" stroke="#2d3436" stroke-width="1.8"/></symbol>
+<symbol id="i-action-skip" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M11 11l10 10M21 11L11 21" stroke="#2d3436" stroke-width="2.2" stroke-linecap="round"/></symbol>
+<symbol id="i-food" viewBox="0 0 32 32"><ellipse cx="16" cy="18" rx="10" ry="7" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M10 14c1-4 3-6 6-6s5 2 6 6" fill="#00b894" stroke="#2d3436" stroke-width="1.2"/></symbol>
+<symbol id="i-wear" viewBox="0 0 32 32"><path d="M8 20l4-10h8l4 10H8z" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/><path d="M12 14h8M14 18h4" stroke="#e17055" stroke-width="1.5" stroke-linecap="round"/></symbol>
+<symbol id="i-replace" viewBox="0 0 32 32"><path d="M8 12a8 8 0 1 1-1 4" fill="none" stroke="#6c5ce7" stroke-width="2" stroke-linecap="round"/><path d="M8 7v6h6" fill="none" stroke="#6c5ce7" stroke-width="2" stroke-linejoin="round"/><path d="M10 20h12v4H10z" fill="#00b894" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-sell" viewBox="0 0 32 32"><path d="M6 14l10-6 10 6v10H6V14z" fill="#fdcb6e" stroke="#2d3436" stroke-width="1.5"/><path d="M12 24v-6h8v6" fill="#eee9ff" stroke="#2d3436" stroke-width="1"/></symbol>
+<symbol id="i-keep" viewBox="0 0 32 32"><path d="M16 6l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z" fill="#eee9ff" stroke="#2d3436" stroke-width="1.5"/></symbol>
+
+</svg>
+
+
+<div class="stage">
+  <div class="ticker" aria-label="Budgeting Tips Ticker">
+    <div class="ticker-track">
+      <span class="hi">• SURVIVE THE MONTH</span>
+      <span>TIP: Keep at least a 3-month emergency fund to shield yourself from weekly shocks.</span>
+      <span class="hi">TIP: Stokvel savings pay out in November with a 10% bonus—use it to fund your December travel & gifts.</span>
+      <span>TIP: Medical aid caps surprise clinic bills at just R300. Padded groceries absorb load-shedding food spoilage.</span>
+      <span class="hi">TIP: Relying on credit cards adds a 22% markup. Pay off debt early to stop the 5% monthly interest spiral.</span>
+      <span>TIP: Budgeting should be sustainable. Spend a little on fun to keep fatigue low and avoid impulse snaps.</span>
+      <span class="hi">TIP: You can track your real-world income, expenses, and savings goals for free on Budget-Hub.com!</span>
+      <span class="hi">• SURVIVE THE MONTH</span>
+      <span>TIP: Keep at least a 3-month emergency fund to shield yourself from weekly shocks.</span>
+      <span class="hi">TIP: Stokvel savings pay out in November with a 10% bonus—use it to fund your December travel & gifts.</span>
+      <span>TIP: Medical aid caps surprise clinic bills at just R300. Padded groceries absorb load-shedding food spoilage.</span>
+    </div>
+  </div>
+  <div class="wrap">
+    <header class="top">
+      <div class="brand">
+        <span class="mark floaty" aria-hidden="true"><svg class="ico" width="48" height="48"><use href="#i-logo-mark"/></svg></span>
+        <div class="brand-text">
+          <strong>Survive the Month</strong>
+          <span>Budget Hub · SA sim</span>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="ghost icon-only" id="muteBtn" title="Sound on/off" aria-label="Toggle sound"><svg class="ico" width="18" height="18"><use href="#i-sound-on"/></svg></button>
+        <button class="ghost" id="resetBtn"><svg class="ico" width="16" height="16"><use href="#i-reset"/></svg> Reset</button>
+      </div>
+    </header>
+    <div id="app"></div>
+    <footer class="foot" style="margin-top: 8px; padding: 4px 0; border: none; background: transparent; box-shadow: none; display: flex; flex-direction: column; align-items: center; gap: 4px; flex:none;">
+      <a href="https://www.budget-hub.com" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; text-decoration:none; color:var(--ink); font-weight:800; font-family:var(--font-display); font-size:.8rem; text-transform:uppercase; letter-spacing:-.02em;">
+        <span style="width:20px; height:20px; border:2px solid var(--ink); border-radius:5px; background:#ffffff; display:grid; place-items:center; box-shadow:1px 1px 0 var(--ink); transform:rotate(-4deg); padding:0; overflow:hidden;" aria-hidden="true">
+          <svg class="ico" width="100%" height="100%" style="margin:0; width:100%; height:100%; display:block;"><use href="#i-logo-mark"/></svg>
+        </span>
+        <span>Budget Hub</span>
+      </a>
+      <span style="font-size:.58rem; opacity:.75; font-weight:700; letter-spacing:.04em; text-transform:uppercase;">Take control of your real budget for free</span>
+    </footer>
+  </div>
+</div>
+<div id="flash"></div>
+<canvas id="particles"></canvas>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------------ *
+ * Survive the Month — v2. A South African budgeting simulation.
+ * Now with: interactive weekly decisions, budget categories that change
+ * your risk, and a tactile budget screen. State persists in localStorage.
+ * ------------------------------------------------------------------ */
+
+const SAVE_KEY = "bh_budget_game_v2";
+const ASSET_V = "20260710f"; // cache-bust for images + audio + voice pack
+const assetUrl = (path) => `${path}${path.includes("?") ? "&" : "?"}v=${ASSET_V}`;
+const app = document.getElementById("app");
+const R = n => "R" + Math.round(n).toLocaleString("en-ZA");
+const rnd = (a,b)=> a + Math.random()*(b-a);
+function scrollStageTop(){
+  const stage=document.querySelector(".stage");
+  if(stage) stage.scrollTop=0;
+  window.scrollTo(0,0);
+}
+function setModalOpen(on){
+  document.body.classList.toggle("modal-open", !!on);
+}
+
+/* ---- Custom SVG icon system (no emoji) ---- */
+function icon(name, size=24, className=''){
+  if(!name) name='warn';
+  const n = normalizeIcon(name);
+  return `<svg class="ico ${className}" width="${size}" height="${size}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+}
+const LEGACY_ICON = {
+  "🚗":"car","🔧":"wrench","🛞":"tyre","🚌":"taxi","🧊":"fridge","🚿":"plumb","🧺":"appliance","⛽":"petrol",
+  "🏥":"hospital","🦷":"dental","👨‍👩‍👧":"family","🕯️":"candle","💍":"ring","🎒":"school","📱":"phone","🚨":"alert",
+  "♨️":"geyser","🏠":"home","💪":"hustle","↩️":"refund","💼":"overtime","☕":"quiet","🎁":"gift","🧾":"sars",
+  "🎄":"festive","⚡":"winter","🪪":"licence","🏖️":"treat","🛍️":"snap","⚠️":"penalty","🌱":"badge-long12",
+  "🌳":"badge-long24","🏔️":"badge-long50","🐐":"badge-long100","⚖️":"badge-balanced","🔥":"badge-brutal12",
+  "🦅":"badge-comeback","🗡️":"badge-janworry","📚":"goal-study","🏡":"goal-home","🎯":"goal","📅":"calendar",
+  "🛡️":"shield","💳":"credit","⭐":"star","🏆":"trophy","💰":"coin","🔊":"sound-on","🔇":"sound-off"
+};
+function normalizeIcon(name){
+  if(!name) return 'warn';
+  if(LEGACY_ICON[name]) return LEGACY_ICON[name];
+  if(typeof name === 'string' && name.length < 40 && name.charCodeAt(0) < 256) return name;
+  return 'warn';
+}
+
+
+/* ================= v3 game-feel layer ================= *
+ * Synthesised sound (Web Audio), Canvas particles, number-counter and
+ * flash/shake juice, plus an SVG persona avatar and savings jar. All are
+ * purely presentational — the simulation logic below is untouched. */
+
+// --- Sound (ElevenLabs MP3 files with tiny oscillator fallback) ---
+let audioCtx=null, muted=(localStorage.getItem('bh_game_muted')==='1');
+const SFX_DIR = './';
+const SFX_FILES = ['click','coin','cash','pay','credit','emergency','savings','month_survived','win','lose'];
+const soundBank = {};
+SFX_FILES.forEach(k=>{ const a=new Audio(assetUrl(`${SFX_DIR}${k}.mp3`)); a.preload='auto'; a.volume=0.55; soundBank[k]=a; });
+const bgMusic = new Audio(assetUrl(`${SFX_DIR}ambient.mp3`));
+bgMusic.loop = true;
+bgMusic.preload = 'auto';
+bgMusic.volume = 0.18;
+function startAmbient(){
+  if(muted || !bgMusic.paused) return;
+  const p=bgMusic.play();
+  if(p && p.catch) p.catch(()=>{});
+}
+function stopAmbient(){ bgMusic.pause(); }
+function ensureAudio(){
+  if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
+}
+function playFile(name, fallback){
+  if(muted) return;
+  ensureAudio();
+  const src=soundBank[name];
+  if(!src){ if(fallback) fallback(); return; }
+  try{
+    const a=src.cloneNode();
+    a.volume=src.volume;
+    const p=a.play();
+    if(p && p.catch) p.catch(()=>fallback&&fallback());
+  }catch(e){ if(fallback) fallback(); }
+}
+function tone(freq,t0,dur,type='sine',vol=0.18){
+  if(!audioCtx||muted) return;
+  const now=audioCtx.currentTime, o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq, now+t0);
+  g.gain.setValueAtTime(0, now+t0);
+  g.gain.linearRampToValueAtTime(vol, now+t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001, now+t0+dur);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(now+t0); o.stop(now+t0+dur+0.03);
+}
+const synth = {
+  click:()=>tone(320,0,0.05,'triangle',0.06),
+  coin:()=>{ tone(880,0,0.08,'square',0.11); tone(1320,0.06,0.13,'square',0.09); },
+  cash:()=>{ tone(660,0,0.09,'square',0.11); tone(990,0.08,0.15,'square',0.11); },
+  thud:()=>{ tone(150,0,0.18,'sawtooth',0.17); tone(90,0.02,0.24,'sine',0.13); },
+  win:()=>{ [523,659,784,1047].forEach((f,i)=>tone(f,i*0.12,0.30,'square',0.13)); },
+  lose:()=>{ [440,349,262].forEach((f,i)=>tone(f,i*0.16,0.42,'sawtooth',0.15)); },
+};
+const sfx = {
+  click:()=>playFile('click', synth.click),
+  coin:()=>playFile('coin', synth.coin),
+  cash:()=>playFile('cash', synth.cash),
+  pay:()=>playFile('pay', synth.thud),
+  credit:()=>playFile('credit', synth.thud),
+  emergency:()=>playFile('emergency', synth.thud),
+  savings:()=>playFile('savings', synth.coin),
+  monthSurvived:()=>playFile('month_survived', synth.coin),
+  thud:()=>playFile('emergency', synth.thud),
+  win:()=>playFile('win', synth.win),
+  lose:()=>playFile('lose', synth.lose),
+};
+
+/* ---- Voice lines (ElevenLabs MP3s in /voices, with speechSynthesis fallback) ---- *
+ * Keys map to voices/<key>.mp3. Keep scripts.json in sync when editing lines. */
+const VOICE_DIR = './voices/';
+const VOICE_LINES = {
+  game_start: "Welcome to Survive the Month. Pick your life, split your pay, and see if you can stay afloat when life hits.",
+  resume: "Welcome back. Your budget is still waiting — let's keep going.",
+  payday: "It's payday. Wallet loaded. Time to split the money before life spends it for you.",
+  budget_locked: "Budget locked. Now the month begins — four weeks, one decision at a time.",
+  goal_pick: "Three months in. You've found your feet. Time to aim at something bigger.",
+  goal_dec: "December-proof fund locked in. Kill Janworry before it's born.",
+  goal_study: "Study fund it is. Cash for a course means a real income bump later.",
+  goal_car: "Car goal set. Cash only — no finance, no interest trap.",
+  goal_home: "Home deposit selected. The long game starts now.",
+  goal_none: "No goal for now. Just keep surviving. That's still a win.",
+  car: "Sigh. Are you serious? The engine is smoking. That's another few thousand I don't have.",
+  brakes: "The brakes and tyres won't make another month. That's a massive expense.",
+  tyre: "A pothole got me. Flat tyre and alignment — there goes my afternoon.",
+  taxi: "Another taxi fare hike, and the queues meant extra trips this week.",
+  fridge: "Stage six load-shedding defrosted the fridge. All my groceries are spoiled!",
+  plumb: "A leaking pipe won't wait. Plumber call-out fees always sting.",
+  appliance: "The washing machine gave in. The repair quote is basically a replacement.",
+  petrol: "Petrol and food prices jumped again. Everything is getting more expensive.",
+  medical: "Oh no — a sudden medical bill. Tests and meds I didn't plan for.",
+  dental: "A toothache that won't wait. Dentist bills are never cheap.",
+  family: "Family back home needs support. Life is tough, but we stand together.",
+  funeral: "A funeral in the family. Everyone is expected to contribute.",
+  wedding: "A cousin is getting married, and the family list came around.",
+  school: "School uniforms, shoes, and stationery. The ask came to me.",
+  phone: "Cracked phone screen! It slipped out of my hand at the worst time.",
+  stolen: "My phone was stolen right out of my hand. I need a replacement to work.",
+  geyser: "Burst geyser at two a.m. Water through the ceiling — the worst word in home ownership.",
+  rates: "Municipal rates and maintenance bills I didn't expect.",
+  hustle: "Yes! The side hustle paid off. Extra cash in my pocket!",
+  refund: "An overcharge got reversed. A small refund win.",
+  overtime: "Weekend overtime pays off. Extra hours, extra cash!",
+  quiet: "A quiet week. Nothing dramatic. Enjoy the calm while it lasts.",
+  credit: "Swiping the credit card. It's expensive, but I've got no choice.",
+  festive: "December hit. Festive travel and gifts home — you knew this bill was coming.",
+  schoolfees: "January school fees and uniforms. Plan for it, or it plans for you.",
+  winter: "Winter electricity spike. The geyser and heater are eating rands.",
+  licence: "Car licence renewal. Another fixed cost you can't postpone.",
+  gift: "Thirteenth cheque! Your employer paid a December bonus. Don't let it evaporate.",
+  sars: "SARS tax refund! Filing season paid off — they owe you for once.",
+  treat: "You've earned this. A weekend away, the outfit, a braai for the crew — your call.",
+  snap: "You snapped. Months of all grind and no joy caught up. Retail therapy happened first.",
+  penalty: "You cut it too close. Underfunded bills landed with late fees. Saving on paper cost more in real life.",
+  action_save: "Banked into the emergency fund. Steady wins.",
+  action_debt: "Threw it at debt. Interest will thank you.",
+  action_spend_good: "Treated yourself while net worth climbed. That's momentum, not a leak.",
+  action_spend_bad: "Treated yourself while things were sliding. Enjoy it — but watch the leak.",
+  action_treat: "You took the break. Zero guilt. Rested people hustle better.",
+  action_skip: "You skipped the treat. Discipline is good — but all gas and no oil burns the engine.",
+  action_fund: "Used the emergency fund. That's what it's for. Top it back up when you can.",
+  action_cut: "Cut lifestyle and spare cash. No fun, but no big new debt.",
+  action_goal: "Raided the goal fund. The ten percent penalty is the price of breaking a promise to yourself.",
+  action_credit: "Put it on credit. Easy now, expensive later. It compounds.",
+  absorb_full: "Your buffers covered it entirely. Planning paid off.",
+  car_replace: "New wheels, paid cash. No finance. That car debt monster stays outside.",
+  car_sell: "Sold the car and switched to taxis. Cash in hand, breakdown risk gone.",
+  car_keep: "Keeping the car for now. Just remember — wear only goes one direction.",
+  month_survived: "Month survived. Score is in. Breathe — then set up next month stronger.",
+  win: "You won. Three-month emergency fund, debt cleared. That's real financial resilience.",
+  lose: "Game over. Debt snowballed past what income could fix. A buffer before the storm changes everything.",
+  badge: "New badge unlocked. Progress you can keep across every run.",
+  raise: "You got a raise! A little more breathing room each month.",
+  cut_hours: "Hours were cut. Income down. Time to tighten the plan.",
+  stokvel: "Stokvel paid out with a ten percent bonus — just in time for December.",
+  endless: "Endless mode. The foundation is built. What's next on the list?"
+};
+// Legacy alias used by older call sites
+const EVENT_DIALOGUE = VOICE_LINES;
+
+let voiceAudio = null;
+const voiceBank = {};
+function voiceSrc(key){ return assetUrl(`${VOICE_DIR}${key}.mp3`); }
+function stopVoice(){
+  try{ if(voiceAudio){ voiceAudio.pause(); voiceAudio.currentTime=0; } }catch(e){}
+  if('speechSynthesis' in window){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+}
+function speakTTS(text){
+  if(!text || !('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    const zaVoice = voices.find(v => v.lang === 'en-ZA' || (v.lang||'').toLowerCase().startsWith('en-za'));
+    if(zaVoice) u.voice = zaVoice;
+    else {
+      const enVoice = voices.find(v => (v.lang||'').startsWith('en'));
+      if(enVoice) u.voice = enVoice;
+    }
+    u.rate = 1.0; u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+/** Play a scripted voice line by key (preferred) or raw text (fallback). */
+function speak(keyOrText, delayMs=0){
+  if(muted) return;
+  const run=()=>{
+    ensureAudio();
+    stopVoice();
+    const key = (typeof keyOrText==='string' && VOICE_LINES[keyOrText]) ? keyOrText : null;
+    const text = key ? VOICE_LINES[key] : (keyOrText||'');
+    if(key){
+      try{
+        if(!voiceBank[key]){ const a=new Audio(voiceSrc(key)); a.preload='auto'; a.volume=0.9; voiceBank[key]=a; }
+        const a=voiceBank[key].cloneNode();
+        a.volume=0.9;
+        voiceAudio=a;
+        const p=a.play();
+        if(p && p.catch) p.catch(()=>speakTTS(text));
+        return;
+      }catch(e){ /* fall through */ }
+    }
+    if(text) speakTTS(text);
+  };
+  if(delayMs>0) setTimeout(run, delayMs); else run();
+}
+function speakEvent(ev, delayMs=320){
+  if(!ev) return;
+  // Prefer stable event id; then known special flags
+  if(ev.id && VOICE_LINES[ev.id]) return speak(ev.id, delayMs);
+  if(ev.reward) return speak('treat', delayMs);
+  if(ev.snap) return speak('snap', delayMs);
+  if(ev.icon && VOICE_LINES[ev.icon]) return speak(ev.icon, delayMs);
+  if(ev.quiet) return speak('quiet', delayMs);
+  // Scheduled / calendar good icons map to keys
+  if(ev.risk==='sched' && ev.icon && VOICE_LINES[ev.icon]) return speak(ev.icon, delayMs);
+}
+
+// --- Particles ---
+const pcanvas=document.getElementById('particles'); let pctx=null, parts=[], praf=0;
+function sizeCanvas(){ if(!pcanvas) return; pcanvas.width=innerWidth; pcanvas.height=innerHeight; }
+function burst(x,y,opts={}){
+  if(!pcanvas) return; pctx=pctx||pcanvas.getContext('2d'); sizeCanvas();
+  const n=opts.n||18, colors=opts.colors||['#00b894','#6c5ce7','#fdcb6e','#e17055'];
+  for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, sp=rnd(2,7.5);
+    parts.push({x,y,vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-rnd(1,4), g:0.16, life:1,
+      c:colors[Math.floor(Math.random()*colors.length)], r:rnd(3,6)}); }
+  if(!praf) praf=requestAnimationFrame(stepParts);
+}
+function stepParts(){
+  pctx.clearRect(0,0,pcanvas.width,pcanvas.height);
+  parts=parts.filter(p=>p.life>0);
+  parts.forEach(p=>{ p.vy+=p.g; p.x+=p.vx; p.y+=p.vy; p.life-=0.02;
+    pctx.globalAlpha=Math.max(0,p.life); pctx.fillStyle=p.c;
+    pctx.beginPath(); pctx.arc(p.x,p.y,p.r,0,Math.PI*2); pctx.fill(); });
+  pctx.globalAlpha=1;
+  praf = parts.length ? requestAnimationFrame(stepParts) : 0;
+}
+
+// --- Flash, shake, number counters ---
+function flash(color){ const f=document.getElementById('flash'); if(!f) return;
+  f.style.transition='none'; f.style.background=color; f.style.opacity='0.5';
+  requestAnimationFrame(()=>{ f.style.transition='opacity .45s ease'; f.style.opacity='0'; }); }
+function shake(){ const w=document.querySelector('.wrap'); if(!w) return;
+  w.classList.remove('shake'); void w.offsetWidth; w.classList.add('shake');
+  setTimeout(()=>w.classList.remove('shake'),460); }
+function pulse(el,dir){ if(!el) return; el.classList.remove('pulseUp','pulseDown'); void el.offsetWidth;
+  el.classList.add(dir>0?'pulseUp':'pulseDown'); setTimeout(()=>el.classList.remove('pulseUp','pulseDown'),620); }
+function animateMoney(el, from, to, dur=650){
+  if(!el || from===to){ if(el) el.textContent=R(to); return; }
+  const start=performance.now();
+  const step=now=>{ const t=Math.min(1,(now-start)/dur), e=1-Math.pow(1-t,3);
+    el.textContent=R(from+(to-from)*e); if(t<1) requestAnimationFrame(step); };
+  requestAnimationFrame(step); pulse(el, to-from);
+}
+function animateInt(el, to, dur=750){ if(!el) return; const start=performance.now();
+  const step=now=>{ const t=Math.min(1,(now-start)/dur), e=1-Math.pow(1-t,3);
+    el.textContent=Math.round(to*e); if(t<1) requestAnimationFrame(step); }; requestAnimationFrame(step); }
+
+// --- HUD number animation ---
+let lastHud=null;
+function hudVals(){ return { ef:S.emergencyFund, debt:S.debt,
+  nw:S.emergencyFund+S.stokvel+(S.sinking||0)+((S.goal&&S.goal.saved)||0)+(S.rollover||0)-S.debt }; }
+function paintHud(){
+  if(!S) return; const cur=hudVals(), prev=lastHud||cur;
+  animateMoney(app.querySelector('[data-hud="ef"]'),   prev.ef,   cur.ef);
+  animateMoney(app.querySelector('[data-hud="debt"]'), prev.debt, cur.debt);
+  animateMoney(app.querySelector('[data-hud="nw"]'),   prev.nw,   cur.nw);
+  lastHud=cur;
+}
+
+// --- Persona avatar + savings jar (SVG) ---
+function mood(){
+  if(S.won) return "celebrating";
+  const em = essentialsTotal()>0 ? S.emergencyFund/essentialsTotal() : 0;
+  if(S.debt > S.income*1.2) return "stressed";
+  if(S.debt > 0 && em < 0.5)  return "worried";
+  let m = (em >= 2 && S.debt<=0) ? "happy" : "neutral";
+  // Fatigue degrades mood even when the finances are green
+  if((S.fatigue||0)>=60 && (m==="happy"||m==="neutral")) m="worried";
+  return m;
+}
+function moodLabel(){
+  if((S.fatigue||0)>=60 && S.debt<=S.income*1.2) return "Running on empty";
+  return {happy:"Feeling secure",neutral:"Getting by",worried:"A bit stressed",
+    stressed:"Under pressure",celebrating:"Thriving!"}[mood()];
+}
+const pAvatars = {
+  student: "assets/avatar_first_job.jpg",
+  family: "assets/avatar_supporting_family.jpg",
+  tight: "assets/avatar_tight_budget.jpg"
+};
+const HERO_BANNER = "assets/game_hero_banner.jpg";
+function avatarImg(personaKey, size=52){
+  const src = assetUrl(pAvatars[personaKey] || pAvatars.student);
+  const m = mood();
+  const map = {happy:"mood-happy",neutral:"mood-neutral",worried:"mood-worried",stressed:"mood-stressed",celebrating:"mood-celebrating"};
+  const badgeSvg = icon(map[m]||"mood-neutral", Math.round(size*0.35), "ico-lg");
+  const label = ({student:"First Job",family:"Supporting Family",tight:"Tight Budget"})[personaKey] || "Player";
+  return `<div class="avatar-container" style="position:relative; width:${size}px; height:${size}px; flex:none; display:inline-block;">
+    <img src="${src}" alt="${label}" width="${size}" height="${size}" loading="eager" decoding="async"
+      style="width:100%; height:100%; object-fit:cover; border-radius:14px; border:3px solid var(--ink); box-shadow:2px 2px 0 var(--ink); background:var(--purple-soft);">
+    <div style="position:absolute; bottom:-3px; right:-3px; background:#ffffff; border:2px solid var(--ink); border-radius:50%; width:${Math.round(size*0.48)}px; height:${Math.round(size*0.48)}px; display:grid; place-items:center; box-shadow:1px 1px 0 var(--ink); padding:2px; box-sizing:border-box;" aria-hidden="true">
+      ${badgeSvg}
+    </div>
+  </div>`;
+}
+function avatarSVG(m, size=64){
+  const map = {happy:"mood-happy",neutral:"mood-neutral",worried:"mood-worried",stressed:"mood-stressed",celebrating:"mood-celebrating"};
+  return icon(map[m]||"mood-neutral", size, "ico-lg");
+}
+
+function jarSVG(pct){
+  pct=Math.max(0,Math.min(1,pct)); const top=14, bot=76, fillH=Math.round((bot-top)*pct), fy=bot-fillH;
+  return `<svg width="60" height="80" viewBox="0 0 70 84" aria-hidden="true">
+    <rect x="24" y="4" width="22" height="8" rx="2" fill="#000000"/>
+    <rect x="12" y="12" width="46" height="66" rx="11" fill="#f2f0ff" stroke="#000000" stroke-width="3"/>
+    <clipPath id="jarClip"><rect x="14" y="14" width="42" height="62" rx="9"/></clipPath>
+    <g clip-path="url(#jarClip)">
+      <rect x="14" y="${fy}" width="42" height="${fillH}" fill="#00b894"/>
+      <rect x="14" y="${fy}" width="42" height="4" fill="#34d6ab"/>
+    </g></svg>`;
+}
+function statusHero(){
+  const em = essentialsTotal()>0 ? S.emergencyFund/essentialsTotal() : 0;
+  const pct = Math.min(100, Math.round((em/3)*100));
+  return `<div class="hero">
+    <div class="heroAvatar" style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+      ${avatarImg(S.persona, 60)}
+      <span class="moodlbl" style="text-align:center; font-size:.65rem;">${moodLabel()}</span>
+    </div>
+    <div style="flex:1;min-width:120px;padding:0 8px">
+      <div style="font-family:var(--font-display);font-weight:800;font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Shield XP · fund buffer</div>
+      <div class="xp-bar"><i style="width:${pct}%"></i></div>
+      <div class="muted" style="font-size:.72rem;font-weight:700;margin-top:4px;text-transform:uppercase">${pct}% to 3-month shield</div>
+    </div>
+    <div class="heroJar">${jarSVG(em/3)}<span class="jarlbl">${em.toFixed(1)} / 3 mo</span></div>
+  </div>`;
+}
+
+/* ---- Personas (starting scenarios) ----
+ * `hardness` scales how hard shocks hit relative to income — margin matters. */
+const PERSONAS = {
+  student: { name:"First Job", income:14000, debt:5000, rollover:800, hardness:1.00,
+    tag:"mid", tagText:"Some slack", hasCar:true, carPrice:28000,
+    blurb:"Fresh in the working world. A clothing account you regret, big-city rent and an old hatchback.",
+    essentials:{ rent:4200, groceries:1600, transport:1400, blacktax:800, airtime:450 } },
+  family:  { name:"Supporting Family", income:22000, debt:12000, rollover:1200, hardness:1.08,
+    tag:"mid", tagText:"Stretched", hasCar:true, carPrice:38000,
+    blurb:"Decent salary, but you're the ATM for the whole family. Black tax is real. You drive the family sedan.",
+    essentials:{ rent:6500, groceries:2800, transport:2000, blacktax:2500, airtime:550 } },
+  tight:   { name:"Tight Budget", income:9500, debt:3000, rollover:300, hardness:1.18,
+    tag:"hard", tagText:"On the edge", hasCar:false,
+    blurb:"Every rand counts. One emergency away from a payday loan. You commute by taxi. Just surviving is a win.",
+    essentials:{ rent:3200, groceries:1300, transport:1100, blacktax:500, airtime:300 } }
+};
+
+/* ---- Difficulty modes: scale shock frequency, size and streaks ---- *
+ * Realistic pBad dropped 0.56 → 0.50 in v3 step 3 to offset the new
+ * scheduled calendar load (~R400/mo average) — total expected outflow
+ * stays within ~5% of v2. */
+const DIFFICULTY = {
+  chilled:   { name:"Chilled",   pBad:0.40, pGood:0.55, sizeMult:0.85, maxBig:1, ramp:0.02, rampCap:1.22,
+    blurb:"Gentler, rarer shocks. Learn the ropes." },
+  realistic: { name:"Realistic", pBad:0.50, pGood:0.40, sizeMult:1.12, maxBig:1, ramp:0.03, rampCap:1.34,
+    blurb:"Bad months hurt. Discipline wins." },
+  brutal:    { name:"Brutal",    pBad:0.70, pGood:0.28, sizeMult:1.55, maxBig:3, ramp:0.045, rampCap:1.62,
+    blurb:"Relentless. Even great budgeting only just keeps up." },
+};
+
+/* ---- Calendar: game month 1 = March ---- *
+ * December lands at game month 10 — nine months to learn before the Dec–Jan
+ * gauntlet. Scheduled bills are foreseeable, so they are NEVER scaled by
+ * difficulty or hardness: planning for them is the skill being tested. */
+const MONTHNAMES=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const calMonth = m => ((2 + (m-1)) % 12) + 1;
+const monthName = m => MONTHNAMES[calMonth(m)-1];
+const SCHED_AMT = {
+  festive:    { student:2800, family:4200, tight:1800 },
+  schoolfees: { student:1400, family:3200, tight:900 },
+  winter:     { student:300,  family:400,  tight:250 },
+};
+function scheduledFor(m){
+  const cm=calMonth(m), out=[];
+  if(cm===12) out.push({ id:"festive",    icon:"festive", label:"Festive travel + gifts home", amt:SCHED_AMT.festive[S.persona] });
+  if(cm===1)  out.push({ id:"schoolfees", icon:"schoolfees", label:"School fees & uniforms",      amt:SCHED_AMT.schoolfees[S.persona] });
+  if(cm===6||cm===7) out.push({ id:"winter", icon:"winter", label:"Winter electricity spike", amt:SCHED_AMT.winter[S.persona] });
+  if(cm===3 && m>1 && S.hasCar) out.push({ id:"licence", icon:"licence", label:"Car licence renewal", amt:780 });
+  return out;
+}
+/* Permanent January/March escalations — applied once, on the month's budget screen */
+function applyCalendarAdjustments(){
+  if(S.adjMonth===S.month) return;
+  S.adjMonth=S.month; S.calNotes=[];
+  const cm=calMonth(S.month);
+  if(cm===1){ S.medicalRec=Math.max(350, Math.round(S.medicalRec*1.08/10)*10);
+    S.calNotes.push(`January: medical aid premiums up 8% — recommended cover is now ${R(S.medicalRec)}.`); }
+  if(cm===3 && S.month>1){ S.essentials.rent=Math.round(S.essentials.rent*1.08/10)*10;
+    S.calNotes.push(`Lease anniversary: rent & utilities up 8% — now ${R(S.essentials.rent)}.`); }
+  save();
+}
+
+/* ---- Budget categories ---- */
+const CATS = [
+  { key:"rent",      label:"Rent & utilities", type:"ess",  hint:"Roof, water, lights, load-shedding" },
+  { key:"groceries", label:"Groceries",        type:"ess",  hint:"Padding this cushions food shocks", risk:"food" },
+  { key:"transport", label:"Transport",        type:"ess",  hint:"Extra here = car maintenance, fewer breakdowns", risk:"car" },
+  { key:"blacktax",  label:"Family support",   type:"ess",  hint:"Black tax — money sent home" },
+  { key:"airtime",   label:"Airtime & data",   type:"ess",  hint:"Staying connected" },
+  { key:"medical",   label:"Medical aid",      type:"ess",  hint:"Fund it to cap surprise medical bills", risk:"medical" },
+  { key:"funeral",   label:"Funeral cover",    type:"ess",  hint:"R150/mo — caps funeral contributions at R250", risk:"funeral" },
+  { key:"debt",      label:"Debt repayment",   type:"ess",  hint:"Clear it faster to pay less interest" },
+  { key:"emergency", label:"Emergency fund",   type:"sav",  hint:"Your shield against life's shocks" },
+  { key:"stokvel",   label:"Stokvel savings",  type:"sav",  hint:"Forced saving — pays out in November with a 10% bonus" },
+  { key:"plan",      label:"Planned expenses", type:"sav",  hint:"Sinking fund for the bills you can see coming (see Coming up)" },
+  { key:"goal",      label:"Goal savings",     type:"sav",  hint:"Toward your chosen life goal" },
+  { key:"homeins",   label:"Home insurance",   type:"ess",  hint:"R280/mo — caps home disasters at a R1 000 excess", risk:"home" },
+  { key:"fun",       label:"Lifestyle & fun",  type:"want", hint:"Braais, takeaways, nights out" },
+];
+const PILL = { ess:"pill ess", sav:"pill sav", want:"pill want" };
+const PILLTXT = { ess:"Need", sav:"Save", want:"Want" };
+const CREDIT_MARKUP = 1.22;   // taking credit costs 22% on top
+const DEBT_INTEREST = 1.05;   // debt grows 5% a month
+
+/* ---- Badges ---- *
+ * Persist under their own key so they survive game resets and replays.
+ * "Thriving" month = fund ≥ 3× essentials AND debt ≤ 25% of income AND a
+ * lifestyle allocation > 0 — thriving includes living. Counted per run. */
+const BADGE_KEY = "bh_game_badges";
+const BADGES = [
+  { id:"long12",  name:"The Long Game I",   icon:"badge-long12", desc:"12 thriving months in one run" },
+  { id:"long24",  name:"The Long Game II",  icon:"badge-long24", desc:"24 thriving months in one run" },
+  { id:"long50",  name:"The Long Game III", icon:"badge-long50", desc:"50 thriving months in one run" },
+  { id:"long100", name:"The Long Game IV",  icon:"badge-long100", desc:"100 thriving months in one run" },
+  { id:"balanced",name:"Balanced Life",     icon:"badge-balanced", desc:"Saved 15%+ and kept 5%+ lifestyle for 6 straight months" },
+  { id:"brutal12",name:"Brutal Year",       icon:"badge-brutal12", desc:"Survived 12 months on Brutal" },
+  { id:"comeback",name:"The Comeback",      icon:"badge-comeback", desc:"From debt over 1.5× income back to debt-free" },
+  { id:"janworry",name:"Janworry Slayer",   icon:"badge-janworry", desc:"Survived December and January without touching credit" },
+  { id:"build_dec",  name:"Builder: December-proof", icon:"badge-build_dec", desc:"Saved a full December-proof fund" },
+  { id:"build_study",name:"Builder: Studied Up",     icon:"badge-build_study", desc:"Paid cash for a course that raised your income" },
+  { id:"build_car",  name:"Builder: New Wheels",     icon:"badge-build_car", desc:"Bought a car cash — no finance" },
+  { id:"build_home", name:"Builder: Homeowner",      icon:"badge-build_home", desc:"Saved a home deposit and bought the place" },
+];
+function loadBadges(){ try{ return JSON.parse(localStorage.getItem(BADGE_KEY))||{}; }catch(e){ return {}; } }
+function awardBadge(id){
+  const b=loadBadges(); if(b[id]) return false;
+  b[id]={ at:Date.now() };
+  try{ localStorage.setItem(BADGE_KEY, JSON.stringify(b)); }catch(e){}
+  const def=BADGES.find(x=>x.id===id);
+  if(def) S.newBadges=(S.newBadges||[]).concat(`${icon(def.icon,16)} <b>${def.name}</b> — ${def.desc}`);
+  return true;
+}
+
+/* ---- Life events (weekly) ---- *
+ * Tuned so a disciplined player nets positive over time. "big" shocks are
+ * capped per month (see drawEvent) to avoid brutal streaks.
+ * v3: every bad event has a cooldown `cd` (weeks) so it can't repeat absurdly,
+ * and `req` gates events by state: "car"/"nocar" (persona) and "home"
+ * (dormant until the homeowner arc ships). Pool mean stays ~R1 090, so event
+ * frequency/balance is unchanged — only variety. */
+const EVENTS = [
+  // Transport — car owners
+  { id:"car",     bad:true, big:true, min:1500, max:2600, w:6, cd:8,  req:"car", risk:"car", icon:"car", title:"Car trouble",
+    desc:"Your car broke down and you had to sort it out fast." },
+  { id:"brakes",  bad:true, big:true, min:900,  max:1800, w:3, cd:10, req:"car", risk:"car", icon:"wrench", title:"Brakes & tyres worn",
+    desc:"The mechanic shook his head — the brakes and tyres won't make another month." },
+  { id:"tyre",    bad:true,           min:300,  max:600,  w:4, cd:6,  req:"car", risk:"car", icon:"tyre", title:"Flat tyre",
+    desc:"A pothole got you. New tyre, plus the alignment while they're at it." },
+  // Transport — taxi commuters
+  { id:"taxi",    bad:true,           min:150,  max:400,  w:5, cd:6,  req:"nocar", icon:"taxi", title:"Taxi fare hike",
+    desc:"Fares went up on your route — and long queues meant extra trips this week." },
+  // Household
+  { id:"fridge",  bad:true,           min:350,  max:750,  w:5, cd:6,  risk:"food", icon:"fridge", title:"Load-shedding spoiled your food",
+    desc:"The fridge defrosted during stage 6. Groceries down the drain." },
+  { id:"plumb",   bad:true,           min:400,  max:900,  w:4, cd:8,  icon:"plumb", title:"Shower / plumbing broke",
+    desc:"A leaking pipe won't wait. The plumber's call-out fee alone stung." },
+  { id:"appliance", bad:true, big:true, min:1500, max:3500, w:2, cd:20, icon:"appliance", title:"Appliance died",
+    desc:"The fridge/washing machine gave in — repair quote was basically a replacement." },
+  { id:"petrol",  bad:true,           min:200,  max:450,  w:4, cd:4,  icon:"petrol", title:"Everything got pricier",
+    desc:"Petrol and food prices jumped this week." },
+  // Health
+  { id:"medical", bad:true, big:true, min:800,  max:1800, w:5, cd:8,  risk:"medical", icon:"hospital", title:"Medical bill",
+    desc:"A clinic run, tests and meds you didn't plan for." },
+  { id:"dental",  bad:true,           min:600,  max:1400, w:3, cd:12, risk:"dental", icon:"dental", title:"Dentist / new glasses",
+    desc:"You couldn't put it off any longer — and these things are never cheap." },
+  // Family & community
+  { id:"family",  bad:true,           min:800,  max:1600, w:6, cd:6,  icon:"family", title:"Family emergency",
+    desc:"A relative called — it couldn't wait." },
+  { id:"funeral", bad:true,           min:500,  max:2000, w:4, cd:10, risk:"funeral", icon:"candle", title:"Funeral contribution",
+    desc:"A funeral in the family. Everyone is expected to contribute — and you will." },
+  { id:"wedding", bad:true,           min:600,  max:1500, w:2, cd:16, icon:"ring", title:"Wedding contribution",
+    desc:"A cousin is getting married and the family list came around." },
+  { id:"school",  bad:true,           min:300,  max:700,  w:3, cd:10, icon:"school", title:"School stuff for a relative",
+    desc:"A uniform, shoes and stationery — the ask came to you." },
+  // Personal
+  { id:"phone",   bad:true,           min:500,  max:1000, w:3, cd:12, icon:"phone", title:"Cracked phone screen",
+    desc:"It slipped out of your hand at the worst time." },
+  { id:"stolen",  bad:true, big:true, min:1800, max:3200, w:1, cd:24, icon:"alert", title:"Phone stolen",
+    desc:"Grabbed right out of your hand. You need a replacement to work and bank." },
+  // Homeowner pool — dormant until the home-deposit arc ships (S.homeowner)
+  { id:"geyser",  bad:true, big:true, min:9000, max:14000, w:2, cd:48, req:"home", risk:"home", icon:"geyser", title:"Geyser burst",
+    desc:"Water through the ceiling at 2am. The single worst word in home ownership." },
+  { id:"rates",   bad:true,           min:600,  max:1400, w:3, cd:10, req:"home", icon:"home", title:"Rates & maintenance surprise",
+    desc:"The municipality and the house both sent bills you didn't expect." },
+  // Good breaks
+  { id:"hustle",  bad:false,          min:800,  max:1800, w:9, icon:"hustle", title:"Side hustle paid off!",
+    desc:"That weekend gig came through. Extra cash in your pocket." },
+  { id:"refund",  bad:false,          min:400,  max:1100, w:6, icon:"refund", title:"Unexpected refund",
+    desc:"An overcharge got reversed. A small win." },
+  { id:"overtime", bad:false,         min:500,  max:1200, w:4, icon:"overtime", title:"Overtime weekend",
+    desc:"You put in the extra hours and it showed up in your pay." },
+  { id:"quiet",   bad:false,          min:0,    max:0,    w:20, icon:"quiet", title:"A quiet week",
+    desc:"Nothing dramatic happened. Enjoy the calm." },
+];
+
+/* ------------------------------------------------------------------ */
+let S = null;
+
+function newGame(personaKey, difficulty){
+  const p = PERSONAS[personaKey];
+  S = {
+    version:3, persona:personaKey, difficulty:difficulty||"realistic", month:1,
+    income:p.income, rollover:p.rollover, hasCar:p.hasCar, cooldowns:{},
+    car:p.hasCar?{wear:0,newUntil:0}:null,
+    emergencyFund:0, stokvel:0, debt:p.debt,
+    essentials:{...p.essentials},
+    medicalRec: Math.max(350, Math.round(p.income*0.03/50)*50),
+    scoreTotal:0, history:[], status:"budget",
+    thriving:0, balStreak:0, newBadges:[],
+    sinking:0, schedDue:[], calGood:null, adjMonth:0, decNoCredit:false,
+    goal:null, homeowner:false, stabilized:false,
+    momentum:0, fatigue:0, markers:{}, rewardPending:null, treatMonth:0,
+    efLast:0, nwStart:0, victory:false
+  };
+  save(); render();
+}
+function save(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
+function load(){ try{ const r=localStorage.getItem(SAVE_KEY); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function wipe(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} S=null; render(); }
+
+/* ---------------------- SCREENS ---------------------- */
+function render(){
+  setModalOpen(false);
+  scrollStageTop();
+  if(!S) return renderStart();
+  if(S.status==="budget" && S.month>=4 && !S.goal) return renderGoalChoice();
+  if(S.status==="budget")  return renderBudget();
+  if(S.status==="week")    return renderWeek();
+  if(S.status==="summary") return renderSummary();
+  if(S.status==="over")    return renderOver();
+}
+
+function renderStart(){
+  lastHud = null;   // don't animate HUD across a fresh game
+  setModalOpen(false);
+  const saved = load();
+  const dIcons = {chilled:"diff-chilled", realistic:"diff-realistic", brutal:"diff-brutal"};
+  const cards = Object.entries(PERSONAS).map(([k,p])=>`
+    <button type="button" class="persona" data-p="${k}" aria-pressed="false">
+      <div class="picon persona-avatar" aria-hidden="true">
+        <img src="${assetUrl(pAvatars[k])}" alt="" width="112" height="112" loading="eager" decoding="async">
+      </div>
+      <div class="name">${p.name} <span class="tag ${p.tag}">${p.tagText}</span></div>
+      <div class="inc">${R(p.income)}/mo</div>
+      <small>${p.blurb}</small>
+    </button>`).join("");
+  const diffs = Object.entries(DIFFICULTY).map(([k,d])=>`
+    <button type="button" class="persona ${k==='realistic'?'on':''}" data-d="${k}" aria-pressed="${k==='realistic'?'true':'false'}">
+      <div class="picon" aria-hidden="true">${icon(dIcons[k]||"diff-realistic",36)}</div>
+      <div class="name">${d.name}${k==='realistic'?' <span class="tag mid">Rec</span>':''}</div>
+      <small>${d.blurb}</small>
+    </button>`).join("");
+  app.innerHTML = `
+    <div class="card card-in" style="padding-top: 0;">
+      <div class="card-banner">
+        <img src="${assetUrl(HERO_BANNER)}" alt="Survive the Month — South African budgeting game" width="1280" height="720" loading="eager" decoding="async">
+      </div>
+      <div>
+        <p class="kicker"><span class="dot"></span> Level select · local save</p>
+        <h1>Survive<br>the Month</h1>
+        <p class="lead">Budget your salary in rands, then <b>make the call</b> when life hits.
+          Padding needs and cover lower risk. Credit is the easy button — and the boss fight.</p>
+
+        <div class="howto">
+          <div class="step-card"><div class="num">${icon("split",22)}</div><div><strong>Split the pay</strong><p>Needs · Saves · Wants. Every rand changes your risk meters.</p></div></div>
+          <div class="step-card"><div class="num">${icon("weeks",22)}</div><div><strong>Survive 4 weeks</strong><p>Shocks, windfalls, and hard choices. You pick how to cover them.</p></div></div>
+          <div class="step-card"><div class="num">${icon("trophy",22)}</div><div><strong>Win the long game</strong><p>3-month emergency fund + debt cleared. Then build a life goal.</p></div></div>
+        </div>
+
+        <div class="section-label" id="char-label">Choose your character</div>
+        <div class="personas" role="group" aria-labelledby="char-label">${cards}</div>
+
+        <div class="section-label" id="diff-label">Difficulty</div>
+        <div class="personas" role="group" aria-labelledby="diff-label">${diffs}</div>
+
+        <div class="section-label">Badge shelf <span class="muted" style="font-weight:700;font-size:.72rem;letter-spacing:.04em">— kept across runs</span></div>
+        <div class="badge-shelf">${BADGES.map(b=>{
+          const got=!!loadBadges()[b.id];
+          return `<span class="badge ${got?'ok':'mid'}" title="${b.desc}"${got?'':' style="opacity:.4;filter:grayscale(1)"'}>${icon(b.icon,16)} ${b.name}</span>`;
+        }).join("")}</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; width:100%; margin-top:18px; padding-top:16px; border-top:2px solid rgba(46,46,50,.08);">
+        <button class="btn play block" id="startBtn" style="margin: 0;" disabled>Pick a character to start</button>
+        ${saved ? `<button class="btn sec block" id="resumeBtn" style="margin: 0;">
+          ${icon("play",18)} Resume · Month ${saved.month}</button>` : ``}
+      </div>
+    </div>`;
+
+  let chosen=null, diff="realistic";
+  const startBtn = ()=>document.getElementById("startBtn");
+  const refreshStart = ()=>{ const b=startBtn(); b.disabled=!chosen;
+    b.innerHTML = chosen ? `${icon("play",18)} Play as ${PERSONAS[chosen].name} · ${DIFFICULTY[diff].name}` : "Pick a character to start"; };
+
+  app.querySelectorAll("[data-p]").forEach(el=>{
+    el.onclick=()=>{ app.querySelectorAll("[data-p]").forEach(x=>{ x.classList.remove("on"); x.setAttribute("aria-pressed","false"); });
+      el.classList.add("on"); el.setAttribute("aria-pressed","true"); chosen=el.dataset.p; refreshStart(); };
+  });
+  app.querySelectorAll("[data-d]").forEach(el=>{
+    el.onclick=()=>{ app.querySelectorAll("[data-d]").forEach(x=>{ x.classList.remove("on"); x.setAttribute("aria-pressed","false"); });
+      el.classList.add("on"); el.setAttribute("aria-pressed","true"); diff=el.dataset.d; refreshStart(); };
+  });
+  document.getElementById("startBtn").onclick=()=>{ if(chosen) newGame(chosen, diff); };
+  if(saved) document.getElementById("resumeBtn").onclick=()=>{ S=migrate(saved); speak('resume', 120); render(); };
+  scrollStageTop();
+}
+
+function hud(){
+  const cur = hudVals(), prev = lastHud||cur;   // show previous, then animate to current
+  return `<div class="hud">
+    <div class="stat"><div class="lbl">Month · level</div><div class="val pur">${S.month} <span style="font-size:.68rem;opacity:.65;font-weight:700">${monthName(S.month).slice(0,3)}</span></div></div>
+    <div class="stat"><div class="lbl">${icon("shield",12)} Emergency</div><div class="val pos" data-hud="ef">${R(prev.ef)}</div></div>
+    <div class="stat"><div class="lbl">${icon("credit",12)} Debt</div><div class="val ${S.debt>0?'neg':'pos'}" data-hud="debt">${R(prev.debt)}</div></div>
+    <div class="stat"><div class="lbl">${icon("star",12)} Net worth</div><div class="val ${cur.nw>=0?'pos':'neg'}" data-hud="nw">${R(prev.nw)}</div></div>
+  </div>`;
+}
+
+function essentialsTotal(){ return Object.values(S.essentials).reduce((a,b)=>a+b,0); }
+function minDebtPayment(){ return S.debt>0 ? Math.max(300, Math.round(S.debt*0.05)) : 0; }
+function suggestion(key){
+  if(S.essentials[key]!==undefined) return S.essentials[key];
+  if(key==="medical")   return S.medicalRec;
+  if(key==="funeral")   return 150;
+  if(key==="homeins")   return 280;
+  if(key==="goal")      return (S.goal&&S.goal.target)?Math.round(S.income*0.05/50)*50:0;
+  if(key==="debt")      return minDebtPayment();
+  if(key==="emergency") return Math.round(S.income*0.10);
+  if(key==="stokvel")   return Math.round(S.income*0.05);
+  if(key==="plan"){ let t=0; for(let k=1;k<=3;k++) scheduledFor(S.month+k).forEach(x=>t+=x.amt);
+    return Math.round(t/3/50)*50; }   // avg of the next 3 months' known bills
+  if(key==="fun")       return Math.round(S.income*0.08);
+  return 0;
+}
+
+/* ---------------------- BUDGET ---------------------- */
+function renderBudget(){
+  applyCalendarAdjustments();
+  const available = S.income + S.rollover;
+  // "Coming up" strip: this month's bills + the next two months' known items
+  const upcoming=[];
+  for(let k=0;k<=2;k++) scheduledFor(S.month+k).forEach(x=>upcoming.push(
+    `${icon(x.icon,16)} ${x.label} — <b>${R(x.amt)}</b> <span class="muted">(${k===0?'due this month':monthName(S.month+k)})</span>`));
+  const notes=(S.calNotes||[]).map(n=>`<div class="warnrow" style="margin-top:6px">${n}</div>`).join("");
+  const strip=`<div class="coming"><b>${icon("calendar",16)} Coming up</b> · sinking fund: <b class="${(S.sinking||0)>0?'val pos':''}" style="font-size:inherit">${R(S.sinking||0)}</b><br>
+    ${upcoming.length?upcoming.join("<br>"):`<span class="muted">Nothing scheduled in the next few months. Breathe.</span>`}${notes}</div>`;
+  // Car arc: standing repair-vs-replace-vs-sell decision once the car is worn
+  let carBanner="";
+  if(S.hasCar && S.car && S.car.wear>=2 && S.car.dismissed!==S.month){
+    const price=PERSONAS[S.persona].carPrice||28000, dep=Math.round(price*0.10);
+    const canRep=S.emergencyFund>=dep, cash=Math.min(S.emergencyFund,price);
+    const dire=S.car.wear>=4;
+    carBanner=`<div class="event ${dire?'bad':''}" style="margin:0 0 14px">
+      <h3>${icon("car",22)} ${dire?'Your car is on its last legs':'Your car is getting expensive to keep alive'}</h3>
+      <p style="font-size:.88rem">Wear level ${S.car.wear} — every repair now costs ${Math.round(S.car.wear*15)}% more.
+        ${dire?'Time to decide.':'Replacing early is costly too — run the numbers before you panic.'}</p>
+      <div class="options" style="margin-top:10px">
+        <button class="opt" id="carReplace" ${canRep?'':'disabled'}>
+          <span class="ot">${icon("replace",20)} Replace it — ${R(price)}</span>
+          <span class="oc">${canRep
+            ?`${R(cash)} from savings${price>cash?`, ${R(price-cash)} financed (adds to debt)`:''}. Wear resets, breakdowns halve for a year.`
+            :`You need at least ${R(dep)} (10%) saved to qualify for finance.`}</span></button>
+        <button class="opt" id="carSell">
+          <span class="ot">${icon("sell",20)} Sell it & take taxis — +${R(8000)} now</span>
+          <span class="oc">No more breakdowns, licence fees or maintenance — and no car again.</span></button>
+        <button class="opt" id="carKeep">
+          <span class="ot">${icon("keep",20)} Keep repairing</span>
+          <span class="oc">Do nothing for now. Repairs keep getting pricier.</span></button>
+      </div></div>`;
+  }
+  // Goal progress strip
+  const goalStrip = goalActive() ? `<div class="coming" style="border-color:var(--line)">
+    ${icon(S.goal.icon||"goal",16)} <b>${S.goal.name}</b>: ${R(S.goal.saved)} / ${R(S.goal.target)}
+    <div style="height:10px;border-radius:20px;background:#e7e5f5;overflow:hidden;margin-top:6px;border:2px solid var(--ink)">
+      <div style="height:100%;width:${Math.min(100,Math.round(S.goal.saved/S.goal.target*100))}%;background:var(--purple)"></div>
+    </div></div>` : "";
+  // Rows are filtered by state: Goal savings only with an active goal,
+  // Home insurance only for homeowners.
+  const activeCats = CATS.filter(c=>
+    (c.key!=="goal"    || goalActive()) &&
+    (c.key!=="homeins" || S.homeowner));
+  const rows = activeCats.map(c=>{
+    const sug = suggestion(c.key);
+    const req = (c.key==="debt" && S.debt>0)
+      ? `<div class="hint">Minimum this month: ${R(minDebtPayment())}</div>` : "";
+    const hint = (c.key==="transport" && !S.hasCar)
+      ? "Taxi fares to work and back — no car to maintain"
+      : (c.key==="rent" && S.homeowner) ? "Bond, rates, water, lights — it's all yours now"
+      : (c.key==="goal") ? `Toward your ${S.goal.icon} ${S.goal.name}` : c.hint;
+    const label = (c.key==="rent" && S.homeowner) ? "Bond & utilities" : c.label;
+    return `<div class="cat">
+      <div class="cathead"><span class="${PILL[c.type]}">${PILLTXT[c.type]}</span> ${icon(c.key,18)} ${label}
+        <span class="catval" data-val="${c.key}">${R(sug)}</span></div>
+      <div class="hint">${hint}</div>${req}
+      <div class="ctrl">
+        <button class="step" data-step="-1" data-k="${c.key}">−</button>
+        <input type="range" min="0" max="${available}" step="50" data-k="${c.key}" value="${sug}">
+        <button class="step" data-step="1" data-k="${c.key}">＋</button>
+      </div>
+      <div class="warnrow hide" data-warn="${c.key}"></div>
+    </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    ${hud()}
+    ${statusHero()}
+    <div class="card card-in">
+      <div class="panel-title"><h2>Payday · M${S.month}</h2><span class="mode-chip">${DIFFICULTY[S.difficulty].name} · ${monthName(S.month)}</span></div>
+      <p class="lead" style="margin-bottom: 12px;">Wallet loaded: <b>${R(available)}</b>
+        (${R(S.income)} salary${S.rollover?` + ${R(S.rollover)} rolled over`:``}).</p>
+
+      <div style="margin-bottom: 12px;">
+        ${strip}${goalStrip}${carBanner}
+
+        <div class="split"><div class="seg need" id="segNeed"></div><div class="seg save" id="segSave"></div><div class="seg want" id="segWant"></div></div>
+        <div class="splitleg" style="margin-bottom: 12px;">
+          <span><span class="dotn" style="background:var(--purple)"></span>Needs <b id="pNeed">0%</b></span>
+          <span><span class="dotn" style="background:var(--green)"></span>Savings <b id="pSave">0%</b></span>
+          <span><span class="dotn" style="background:var(--amber)"></span>Wants <b id="pWant">0%</b></span>
+        </div>
+        <div class="risks" id="risks"></div>
+
+        <div class="row" style="margin:12px 0">
+          <button class="ghost" id="autoBtn">${icon("spark",14)} Auto 50/30/20</button>
+          <button class="ghost" id="zeroBtn">${icon("clear",14)} Clear</button>
+        </div>
+        <div id="cats">${rows}</div>
+      </div>
+
+      <div class="remaining">
+        <div><div class="lbl muted" style="font-size:.7rem;text-transform:uppercase">Left to allocate</div>
+          <div class="amt" id="remAmt">R0</div></div>
+        <button class="btn" id="lockBtn">Lock budget →</button>
+      </div>
+    </div>`;
+
+  const ranges = ()=> [...app.querySelectorAll('input[type=range]')];
+  const getAlloc = ()=>{ const o={}; ranges().forEach(i=>o[i.dataset.k]=Math.max(0,+i.value||0)); return o; };
+
+  function paintRange(i){ const pct = (i.value / (available||1))*100; i.style.setProperty('--fill', pct+'%'); }
+
+  function riskBadges(a){
+    const carBuf=Math.max(0,(a.transport||0)-S.essentials.transport);
+    const foodBuf=Math.max(0,(a.groceries||0)-S.essentials.groceries);
+    const med=(a.medical||0)>=S.medicalRec;
+    const sav=((a.emergency||0)+(a.stokvel||0))/S.income;
+    const carL = carBuf>=600?['ok','Low']:carBuf>=150?['mid','Medium']:['bad','High'];
+    const foodL= foodBuf>=600?['ok','Strong']:foodBuf>=150?['mid','Some']:['bad','Thin'];
+    const savL = sav>=0.15?'ok':sav>0?'mid':'bad';
+    const carBadge = S.hasCar
+      ? `<span class="badge ${carL[0]}">${icon("car",14)} Breakdown: ${carL[1]}</span>`
+      : `<span class="badge ok">${icon("taxi",14)} Taxi — no breakdown risk</span>`;
+    const wear=(S.hasCar && S.car && S.car.wear)||0;
+    const wearBadge = wear>0
+      ? `<span class="badge ${wear>=4?'bad':'mid'}">${icon("wear",14)} Wear: ${wear>=4?'on its last legs':wear>=2?'getting costly':'ageing'}</span>` : "";
+    const fun=(a.funeral||0)>=150;
+    const homeBadge = S.homeowner
+      ? `<span class="badge ${(a.homeins||0)>=280?'ok':'bad'}">${icon("homeins",14)} Home: ${(a.homeins||0)>=280?'Insured':'Exposed'}</span>` : "";
+    return [
+      carBadge, wearBadge,
+      `<span class="badge ${foodL[0]}">${icon("food",14)} Food: ${foodL[1]}</span>`,
+      `<span class="badge ${med?'ok':'bad'}">${icon("medical",14)} Medical: ${med?'Covered':'Exposed'}</span>`,
+      `<span class="badge ${fun?'ok':'bad'}">${icon("funeral",14)} Funeral: ${fun?'Covered':'Exposed'}</span>`,
+      homeBadge,
+      `<span class="badge ${savL}">${icon("emergency",14)} Saving ${Math.round(sav*100)}%</span>`
+    ].filter(Boolean).join("");
+  }
+
+  function refresh(){
+    const a=getAlloc();
+    ranges().forEach(paintRange);
+    CATS.forEach(c=>{ const el=app.querySelector(`[data-val="${c.key}"]`); if(el) el.textContent = R(a[c.key]||0); });
+    // split bar
+    let need=0,sav=0,want=0;
+    CATS.forEach(c=>{ const v=a[c.key]||0; if(c.type==="ess")need+=v; else if(c.type==="sav")sav+=v; else want+=v; });
+    const tot=need+sav+want||1;
+    document.getElementById("segNeed").style.width=(need/tot*100)+"%";
+    document.getElementById("segSave").style.width=(sav/tot*100)+"%";
+    document.getElementById("segWant").style.width=(want/tot*100)+"%";
+    document.getElementById("pNeed").textContent=Math.round(need/tot*100)+"%";
+    document.getElementById("pSave").textContent=Math.round(sav/tot*100)+"%";
+    document.getElementById("pWant").textContent=Math.round(want/tot*100)+"%";
+    document.getElementById("risks").innerHTML=riskBadges(a);
+    // remaining + validation
+    const rem=available-tot;
+    const el=document.getElementById("remAmt");
+    el.textContent=R(rem); el.className="amt "+(rem<0?"neg":rem===0?"pos":"");
+    let ok=rem>=0;
+    CATS.forEach(c=>{
+      const w=app.querySelector(`[data-warn="${c.key}"]`); if(!w) return; let msg="";
+      if(c.type==="ess" && S.essentials[c.key]!==undefined && a[c.key]<S.essentials[c.key])
+        msg=`Below the ${R(S.essentials[c.key])} you really need — risky.`;
+      if(c.key==="debt" && S.debt>0 && a.debt<minDebtPayment()){ msg=`Below the ${R(minDebtPayment())} minimum — you'll fall behind.`; ok=false; }
+      if(msg){ w.innerHTML=icon("warn",14)+" "+msg; w.classList.remove("hide"); } else w.classList.add("hide");
+    });
+    const lock=document.getElementById("lockBtn");
+    lock.disabled=!ok; lock.innerHTML = rem<0?`${icon("warn",16)} Over budget!`:`${icon("check",16)} Lock budget`;
+    return a;
+  }
+
+  app.addEventListener("input", e=>{ if(e.target.dataset.k && e.target.type==="range") refresh(); });
+  app.querySelectorAll(".step").forEach(b=>{
+    b.onclick=()=>{ const inp=app.querySelector(`input[type=range][data-k="${b.dataset.k}"]`);
+      inp.value=Math.max(0, Math.min(available, (+inp.value)+ (+b.dataset.step)*100)); refresh(); };
+  });
+  document.getElementById("zeroBtn").onclick=()=>{ ranges().forEach(i=>i.value=0); refresh(); };
+  document.getElementById("autoBtn").onclick=()=>{
+    const a={}; CATS.forEach(c=>a[c.key]=0);
+    Object.keys(S.essentials).forEach(k=>a[k]=S.essentials[k]);
+    a.medical=S.medicalRec; a.funeral=150; a.debt=minDebtPayment();
+    if(S.homeowner) a.homeins=280;
+    let left=available-Object.values(a).reduce((x,y)=>x+y,0);
+    if(left>0){ a.plan=Math.min(left, suggestion("plan")); left-=a.plan;
+      if(goalActive()){ a.goal=Math.min(left, Math.round(S.income*0.05)); left-=a.goal; }
+      a.emergency+=Math.round(left*0.45); a.stokvel+=Math.round(left*0.20);
+      a.fun+=left-Math.round(left*0.45)-Math.round(left*0.20); }
+    ranges().forEach(i=> i.value=Math.min(available, a[i.dataset.k]||0)); refresh();
+  };
+  document.getElementById("lockBtn").onclick=()=>{
+    const a=refresh(); const tot=Object.values(a).reduce((x,y)=>x+y,0);
+    if(available-tot<0) return;
+    speak('budget_locked', 80);
+    applyBudget(a, available-tot);
+  };
+  // Car arc handlers
+  const repBtn=document.getElementById("carReplace"), sellBtn=document.getElementById("carSell"),
+        keepBtn=document.getElementById("carKeep");
+  if(repBtn) repBtn.onclick=()=>{ if(confirm(`Replace your car for ${R(PERSONAS[S.persona].carPrice||28000)}? Savings pay what they can; the rest is financed as debt.`)){
+    if(replaceCar()){ sfx.cash(); speak('car_replace', 120); render(); } } };
+  if(sellBtn) sellBtn.onclick=()=>{ if(confirm("Sell your car for R8 000 and switch to taxis for good?")){
+    sellCar(); sfx.coin(); speak('car_sell', 120); render(); } };
+  if(keepBtn) keepBtn.onclick=()=>{ S.car.dismissed=S.month; speak('car_keep', 80); save(); render(); };
+  refresh(); paintHud(); sfx.cash();   // payday
+  speak('payday', 280);
+}
+
+function applyBudget(a, leftover){
+  S.alloc=a;
+  S.emergencyFund += a.emergency;
+  S.stokvel       += a.stokvel;
+  S.sinking        = (S.sinking||0) + (a.plan||0);
+  S.schedDue       = scheduledFor(S.month).map(x=>({...x}));
+  // Calendar-tied good breaks: rolled once per month, delivered in week 4
+  const cmB=calMonth(S.month); S.calGood=null;
+  if(cmB===12 && Math.random()<0.25)
+    S.calGood={ title:"13th cheque!", icon:"gift", base:Math.round(S.income*0.25),
+      desc:"Your employer paid a December bonus. Don't let it evaporate." };
+  else if(cmB===7 && Math.random()<0.20)
+    S.calGood={ title:"SARS tax refund", icon:"sars", base:Math.round(rnd(600,1500)),
+      desc:"Filing season paid off — SARS owes YOU for once." };
+  S.debt           = Math.max(0, S.debt - a.debt);
+  S.wallet         = leftover;             // unassigned buffer for the month
+  S.funEnv         = a.fun;                // lifestyle you can cut
+  S.buf = { car:Math.max(0,a.transport-S.essentials.transport),
+            food:Math.max(0,a.groceries-S.essentials.groceries) };
+  S.medicalCover   = a.medical >= S.medicalRec;
+  S.funeralCover   = (a.funeral||0) >= 150;
+  S.homeInsCover   = (a.homeins||0) >= 280;
+  if(goalActive()) S.goal.saved += (a.goal||0);
+  S.underfunded    = {};
+  CATS.forEach(c=>{ if(c.type==="ess" && S.essentials[c.key]!==undefined && a[c.key]<S.essentials[c.key])
+    S.underfunded[c.key]=S.essentials[c.key]-a[c.key]; });
+  S.forcedCredit=0; S.tappedFund=0; S.majorsThisMonth=0;
+  S.week=0; S.curEvent=null; S.status="week";
+  S.nwStart=hudVals().nw;   // baseline for the earned/unearned treat check
+  save(); render();
+}
+
+/* ---- Life goals (chosen at month 4; the Build tier of the win) ---- */
+function goalDefs(){
+  const p=S.persona;
+  return {
+    dec:  { name:"December-proof fund", icon:"festive", target:{student:6000,family:8000,tight:4000}[p],
+      blurb:"Kill Janworry before it's born. Short, sweet, achievable this year." },
+    study:{ name:"Study fund", icon:"goal-study", target:{student:12000,family:15000,tight:8000}[p],
+      blurb:"Pay cash for a course — a permanent income bump when you finish." },
+    car:  { name:S.hasCar?"Car upgrade":"First car (cash)", icon:"car", target:{student:28000,family:38000,tight:20000}[p],
+      blurb:S.hasCar?"Replace the ageing car with cash — no finance, no interest."
+                    :"Buy your first car, cash. Freedom — and new costs. Your choice." },
+    home: { name:"Home deposit", icon:"goal-home", target:{student:40000,family:60000,tight:25000}[p],
+      blurb:"The big one. Buying converts your run: bond, rates, geysers — and a real asset." },
+  };
+}
+function completeGoal(){
+  const g=S.goal, pot=g.saved;
+  g.done=true; g.saved=0;   // the pot is spent on the thing itself
+  if(g.id==="dec"){ S.sinking=(S.sinking||0)+pot; awardBadge("build_dec");
+    return `GOAL COMPLETE: ${g.name}! The full ${R(pot)} moved into your sinking fund — December is already paid for.`; }
+  if(g.id==="study"){ const up=Math.round(S.income*0.06); S.income+=up; awardBadge("build_study");
+    return `GOAL COMPLETE: ${g.name}! Course finished, cash-paid — and it shows: income up ${R(up)}/mo, permanently.`; }
+  if(g.id==="car"){ S.hasCar=true; S.car={wear:0,newUntil:S.month+12}; awardBadge("build_car");
+    return `GOAL COMPLETE: ${g.name}! Bought cash — no finance, no interest, and a year of smooth running.`; }
+  if(g.id==="home"){ S.homeowner=true; S.essentials.rent+=350; awardBadge("build_home");
+    return `GOAL COMPLETE: ${g.name}! You own it now. The rent line becomes your bond, rates add R350/mo — and the geyser is yours too. Insure it.`; }
+  return "Goal complete!";
+}
+function renderGoalChoice(){
+  const G=goalDefs();
+  const cards=Object.entries(G).map(([k,g])=>`
+    <button type="button" class="persona" data-g="${k}" style="margin:0;">
+      <div class="picon" aria-hidden="true">${icon(g.icon,36)}</div>
+      <div class="name">${g.name}</div>
+      <div class="inc">${R(g.target)}</div>
+      <small>${g.blurb}</small>
+    </button>`).join("");
+  app.innerHTML=`${hud()}<div class="card card-in">
+    <div style="margin-bottom:12px;">
+      <h2>${icon("goal",28)} Choose a quest</h2>
+      <p class="lead" style="margin-bottom:12px;">${S.victory
+        ? "Champion run. The foundation is built — what's next on the list?"
+        : "Three months in — you've found your feet. Budgets hold when they point at something you actually want."}
+        Pick a goal; a <b>Goal savings</b> line joins your budget.</p>
+    </div>
+    <div style="margin-bottom:18px;">
+      <div class="personas" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;">${cards}</div>
+    </div>
+    <button class="btn sec block" id="noGoalBtn">Just keep surviving (no goal)</button>
+  </div>`;
+  app.querySelectorAll("[data-g]").forEach(el=>{ el.onclick=()=>{
+    const k=el.dataset.g, g=goalDefs()[k];
+    S.goal={ id:k, name:g.name, icon:g.icon, target:g.target, saved:0, lastPct:0 };
+    sfx.coin();
+    speak(VOICE_LINES['goal_'+k] ? ('goal_'+k) : 'goal_pick', 120);
+    save(); render(); }; });
+  document.getElementById("noGoalBtn").onclick=()=>{ S.goal={id:"none"}; speak('goal_none', 100); save(); render(); };
+  speak(S.victory ? 'endless' : 'goal_pick', 350);
+}
+const goalActive = () => S.goal && S.goal.target && !S.goal.done && S.goal.id!=="none";
+/* Endless mode: the Build victory doesn't have to end the run — chain the next
+ * goal, keep the calendar cycling, keep the thriving counter climbing. */
+function continueRun(){
+  S.victory=true; S.won=null; S.goal=null;   // null goal → chooser fires next budget
+  S.month++; S.alloc=null; S.curEvent=null; S.status="budget";
+  speak('endless', 100);
+  save(); render();
+}
+
+/* ---- Car arc decisions (offered on the budget screen at wear ≥ 2) ---- */
+function replaceCar(){
+  const price=PERSONAS[S.persona].carPrice||28000;
+  if(S.emergencyFund < price*0.10) return false;   // need a 10% deposit to qualify
+  const deposit=Math.min(S.emergencyFund, price);
+  S.emergencyFund-=deposit;
+  S.debt+=price-deposit;                           // financed remainder → debt pool
+  S.car={ wear:0, newUntil:S.month+12 };           // newer car: fewer problems for a year
+  save(); return true;
+}
+function sellCar(){
+  S.hasCar=false; S.car=null;
+  S.rollover=(S.rollover||0)+8000;                 // cash in hand this month
+  save(); return true;
+}
+
+/* ---------------------- WEEK / EVENTS ---------------------- */
+function drawEvent(){
+  /* Scheduled calendar bills land in week 1 — known in advance, so never
+   * scaled by difficulty. The sinking fund absorbs them first (see absorb). */
+  if(S.week===1 && (S.schedDue||[]).length){
+    const b=S.schedDue.shift();
+    return { bad:true, base:b.amt, risk:"sched", icon:b.icon, title:b.label,
+      desc:"A bill you knew was coming. This is exactly what the sinking fund is for." };
+  }
+  /* Calendar-tied good break (13th cheque / SARS refund) arrives in week 4 */
+  if(S.week===4 && S.calGood){
+    const g=S.calGood; S.calGood=null;
+    return { bad:false, base:g.base, title:g.title, desc:g.desc, icon:g.icon };
+  }
+  /* Earned reward offer (queued by a progress marker) — earliest free slot from week 2 */
+  if(S.week>=2 && S.week<4 && S.rewardPending && !Object.keys(S.underfunded||{}).length){
+    const why=S.rewardPending; S.rewardPending=null;
+    return { reward:true, bad:false, base:Math.round(rnd(400,1200)), icon:"treat",
+      title:"You've earned this", desc:`${why} A weekend away, the outfit, a braai for the crew — your call.` };
+  }
+  /* Fatigue failure state: months of joyless budgeting eventually snap */
+  {
+    const wAbsF=(S.month-1)*4+S.week;
+    if((S.fatigue||0)>=60 && ((S.cooldowns||{}).snap||0)<=wAbsF && Math.random()<0.35){
+      S.cooldowns=S.cooldowns||{}; S.cooldowns.snap=wAbsF+8;
+      return { bad:true, snap:true, base:Math.round(rnd(400,900)), icon:"snap", title:"You snapped",
+        desc:"Months of all-grind-no-joy caught up with you. Retail therapy happened before you could stop it." };
+    }
+  }
+  /* Underfunded essentials all get penalized (weeks 1–2), at 1.25× the
+   * shortfall + R150 each — so "saving" by skipping rent can never profit.
+   * Penalties are deliberately NOT scaled by difficulty: the arithmetic must
+   * stay exploit-proof on every mode. */
+  if(S.week<=2 && Object.keys(S.underfunded||{}).length){
+    const keys=Object.keys(S.underfunded);
+    if(S.week===1){
+      // biggest shortfall lands first
+      const k=keys.sort((a,b)=>S.underfunded[b]-S.underfunded[a])[0];
+      const short=S.underfunded[k]; delete S.underfunded[k];
+      const pen=Math.round(short*1.25+150);
+      const label=CATS.find(c=>c.key===k).label.toLowerCase();
+      return { bad:true, base:pen, icon:"penalty", title:"Cutting it too close",
+        desc:`You underfunded ${label} by ${R(short)}. Late fees and a scramble cost more than you "saved".` };
+    }
+    // week 2: everything else catches up with you at once
+    let pen=0; const labels=[];
+    keys.forEach(k=>{ pen+=Math.round(S.underfunded[k]*1.25+150);
+      labels.push(CATS.find(c=>c.key===k).label.toLowerCase()); delete S.underfunded[k]; });
+    return { bad:true, base:pen, icon:"penalty", title:"It all caught up with you",
+      desc:`The rest of the underfunded bills (${labels.join(", ")}) landed — with penalties.` };
+  }
+  const D = DIFFICULTY[S.difficulty] || DIFFICULTY.realistic;
+  const hard = (PERSONAS[S.persona].hardness) || 1;
+  const wAbs = (S.month-1)*4 + S.week;   // absolute week, for cooldown tracking
+  // "Newer car" grace (0 breakdowns for 12 months) and wear-based breakdown risk scaling:
+  const wOf = x => {
+    if(x.risk==="car" && S.car){
+      if(S.car.newUntil>S.month && (x.id==="car" || x.id==="brakes")){
+        return 0;
+      }
+      if(x.id==="car" || x.id==="brakes"){
+        return Math.round(x.w * (1 + 0.40 * (S.car.wear||0)));
+      }
+    }
+    return x.w;
+  };
+  const pick = list => { const p=[]; list.forEach(x=>{ for(let i=0;i<wOf(x);i++) p.push(x); });
+    return p[Math.floor(Math.random()*p.length)]; };
+
+  // Pool: filter by persona/state requirements, then drop events still on
+  // cooldown (with a fallback so a fully-parked pool can never break the draw).
+  const pool = EVENTS.filter(x=>{
+    if(x.req==="car")   return S.hasCar;
+    if(x.req==="nocar") return !S.hasCar;
+    if(x.req==="home")  return !!S.homeowner;
+    return true;
+  });
+  const ready = list => { const ok=list.filter(x=>((S.cooldowns||{})[x.id]||0)<=wAbs);
+    return ok.length?ok:list; };
+
+  let e;
+  if(Math.random() < Math.min(0.78, D.pBad * hard)){        // a shock this week?
+    e = pick(ready(pool.filter(x=>x.bad)));
+    // Cap "big" shocks per month so bad luck can't snowball unfairly.
+    if(e.big && (S.majorsThisMonth||0) >= D.maxBig)
+      e = pick(ready(pool.filter(x=>x.bad && !x.big)));
+    if(e.big) S.majorsThisMonth=(S.majorsThisMonth||0)+1;
+  } else if(Math.random() < D.pGood*((S.fatigue||0)>=60?0.8:1)+(S.momentum>0?0.08:0)){ // a good break? (fatigue dulls luck, momentum sharpens it)
+    e = pick(pool.filter(x=>!x.bad && x.id!=="quiet"));
+  } else {
+    e = EVENTS.find(x=>x.id==="quiet");
+  }
+  if(e.cd){ S.cooldowns=S.cooldowns||{}; S.cooldowns[e.id]=wAbs+e.cd; }
+  const ramp = Math.min(D.rampCap, 1+(S.month-1)*D.ramp);
+  // Car arc: repairs cost more as the car wears; breakdowns & brake jobs age it
+  let wearMult=1;
+  if(e.bad && e.risk==="car" && S.car){
+    wearMult=1+0.15*(S.car.wear||0);
+    if(e.id==="car"||e.id==="brakes") S.car.wear=(S.car.wear||0)+1;
+  }
+  const scale = ramp * D.sizeMult * (e.bad ? hard : 1) * wearMult;   // shocks scale with margin
+  const base = e.min===0?0:Math.round(rnd(e.min,e.max)*scale);
+  let desc=e.desc;
+  if(e.bad && e.risk==="car" && S.car && S.car.wear>=3)
+    desc+=" This car is costing you more every time — maybe it's telling you something.";
+  return { id:e.id, bad:e.bad, base, title:e.title, desc, risk:e.risk, icon:e.icon, quiet:e.id==="quiet" };
+}
+
+/* Apply category resilience -> returns {need, absorbedMsg} for bad events */
+function absorb(ev){
+  let need=ev.base, msg="";
+  if(ev.risk==="car" && S.buf.car>0){
+    const cut=Math.min(need, Math.round(S.buf.car*1.5)); S.buf.car=Math.max(0,S.buf.car-Math.round(cut/1.5));
+    need-=cut; msg = need<=0 ? "Your maintenance buffer covered it entirely." : `Maintenance buffer absorbed ${R(cut)}.`;
+  } else if(ev.risk==="food" && S.buf.food>0){
+    const cut=Math.min(need, S.buf.food); S.buf.food-=cut; need-=cut;
+    msg = need<=0 ? "Your padded grocery budget absorbed it." : `Grocery buffer absorbed ${R(cut)}.`;
+  } else if(ev.risk==="medical" && S.medicalCover){
+    const cap=300; msg=`Medical aid capped this at a ${R(cap)} co-pay.`; need=Math.min(need,cap);
+  } else if(ev.risk==="dental" && S.medicalCover){
+    const cap=500; msg=`Medical aid paid a chunk — dental/optical is only partly covered. Your share: ${R(cap)}.`;
+    need=Math.min(need,cap);
+  } else if(ev.risk==="home" && S.homeInsCover){
+    const cap=1000; msg=`Home insurance carried it — you pay the ${R(cap)} excess.`;
+    need=Math.min(need,cap);
+  } else if(ev.risk==="funeral" && S.funeralCover){
+    const cap=250; msg=`Your funeral policy carried the family's expectation — you only add ${R(cap)}.`;
+    need=Math.min(need,cap);
+  } else if(ev.risk==="sched"){
+    const cut=Math.min(need, S.sinking||0); S.sinking=(S.sinking||0)-cut; need-=cut;
+    msg = need<=0 ? "Your sinking fund covered it in full. Planned and paid."
+      : cut>0 ? `Sinking fund covered ${R(cut)}.`
+      : "No sinking fund — this lands on this month's money.";
+  }
+  return { need:Math.max(0,need), msg };
+}
+
+function renderWeek(){
+  if(!S.curEvent){
+    S.week++;
+    if(S.week>4) return endMonth();
+    const ev=drawEvent();
+    if(ev.bad){ const r=absorb(ev); ev.need=r.need; ev.absorbMsg=r.msg; }
+    S.curEvent=ev; save();
+    if(ev.bad && !ev.quiet) setTimeout(()=>sfx.emergency(), 80);
+    else if(!ev.bad && !ev.quiet && !ev.reward) setTimeout(()=>sfx.cash(), 80);
+    // Voice line for every new week event (shocks, windfalls, calendar, quiet, rewards)
+    if(!ev.resolved) speakEvent(ev, 320);
+    if(ev.bad && ev.need===0 && !ev.quiet) speak('absorb_full', 1600);
+  }
+  const ev=S.curEvent;
+  const bars=[1,2,3,4].map(w=>`<div class="w ${w<S.week?'done':w===S.week?'now':''}"></div>`).join("");
+
+  let body="", actions="";
+  if(ev.resolved){
+    body=`<div class="event ${ev.bad?'bad':'good'}"><h3>${ev.title}</h3><p>${ev.resolved}</p></div>`;
+    actions=`<button class="btn block" id="contBtn">${icon("chevron-right",18)} Next week</button>`;
+  } else if(ev.quiet){
+    body=`<div class="event"><h3>${ev.title}</h3><p>${ev.desc}</p></div>`;
+    actions=`<button class="btn block" id="contBtn">${icon("chevron-right",18)} Next week</button>`;
+  } else if(ev.reward){
+    const afford=(S.wallet+S.funEnv)>=ev.base;
+    body=`<div class="event good"><h3>${ev.title}</h3><p>${ev.desc}</p>
+      <div class="amt">${R(ev.base)}</div></div>
+      <p class="muted" style="margin:6px 0">Rewards you've earned aren't leaks — they're what keeps the whole plan alive.</p>`;
+    actions=`<div class="options">
+      <button class="opt" data-do="treat" ${afford?'':'disabled'}>
+        <span class="ot">${icon("action-treat",20)} Take the treat</span>
+        <span class="oc">${afford?`Spend ${R(ev.base)} guilt-free — and earn 3 months of Momentum.`:'Not enough spare cash this month. Next marker, maybe.'}</span></button>
+      <button class="opt" data-do="skip">
+        <span class="ot">${icon("action-skip",20)} Not this time</span>
+        <span class="oc">Keep the cash. (Careful — all grind and no joy builds fatigue.)</span></button>
+    </div>`;
+  } else if(!ev.bad){
+    body=`<div class="event good"><h3>${ev.title}</h3><p>${ev.desc}</p>
+      <div class="amt">+${R(ev.base)}</div></div>
+      <p class="muted" style="margin:6px 0">What do you do with it?</p>`;
+    actions=`<div class="options">
+      <button class="opt" data-do="save"><span class="ot">${icon("action-save",20)} Grow your emergency fund</span>
+        <span class="oc">+${R(ev.base)} to savings — future-you says thanks.</span></button>
+      <button class="opt" data-do="debt" ${S.debt<=0?'disabled':''}><span class="ot">${icon("action-debt",20)} Throw it at debt</span>
+        <span class="oc">${S.debt>0?`Cut debt by ${R(Math.min(ev.base,S.debt))} and pay less interest.`:'No debt to pay.'}</span></button>
+      <button class="opt" data-do="spend"><span class="ot">${icon("action-treat",20)} Treat yourself</span>
+        <span class="oc">Enjoy it now. You've earned a little.</span></button>
+    </div>`;
+  } else {
+    const need=ev.need;
+    if(need<=0){
+      body=`<div class="event bad"><h3>${ev.title}</h3><p>${ev.desc}</p>
+        <div class="absorb">${ev.absorbMsg}</div></div>`;
+      actions=`<button class="btn block" id="contBtn">${icon("chevron-right",18)} Next week</button>`;
+    } else {
+      const fromFund=Math.min(need,S.emergencyFund);
+      const fundRem=need-fromFund, fundCredit=fundRem>0?Math.round(fundRem*CREDIT_MARKUP):0;
+      const cash=Math.min(need, S.funEnv+S.wallet);
+      const cashRem=need-cash, cashCredit=cashRem>0?Math.round(cashRem*CREDIT_MARKUP):0;
+      const canRaid=goalActive() && S.goal.saved>0;
+      const raidCover=canRaid?Math.min(need, Math.floor(S.goal.saved/1.1 + 1e-6)):0;
+      const raidBtn=canRaid?`
+        <button class="opt danger" data-do="goal">
+          <span class="ot">${icon("action-goal",20)} Raid your goal fund</span>
+          <span class="oc">Cover ${R(raidCover)} — costs ${R(Math.round(raidCover*1.1))} of goal savings (10% penalty)${raidCover<need?`, ${R(Math.round((need-raidCover)*CREDIT_MARKUP))} on credit for the rest`:''}. The dream moves further away.</span></button>`:"";
+      body=`<div class="event bad"><h3>${ev.title}</h3><p>${ev.desc}</p>
+        ${ev.absorbMsg?`<div class="absorb">${ev.absorbMsg}</div>`:''}
+        <div class="amt">−${R(need)}</div></div>
+        <p class="muted" style="margin:6px 0">You need ${R(need)}. How do you cover it?</p>`;
+      actions=`<div class="options">
+        <button class="opt" data-do="fund" ${S.emergencyFund<=0?'disabled':''}>
+          <span class="ot">${icon("action-fund",20)} Use your emergency fund</span>
+          <span class="oc">${S.emergencyFund<=0?'Empty — nothing to use.':
+            `−${R(fromFund)} from fund${fundCredit?`, plus ${R(fundCredit)} on credit for the rest`:''}. This is what it's for.`}</span></button>
+        <button class="opt" data-do="cut">
+          <span class="ot">${icon("action-cut",20)} Cut back this month</span>
+          <span class="oc">Use ${R(cash)} from lifestyle + spare cash${cashCredit?`, ${R(cashCredit)} on credit for the rest`:''}. Tighten the belt.</span></button>
+        ${raidBtn}
+        <button class="opt danger" data-do="credit">
+          <span class="ot">${icon("action-credit",20)} Put it on credit</span>
+          <span class="oc">+${R(Math.round(need*CREDIT_MARKUP))} to your debt. Easy now, expensive later.</span></button>
+      </div>`;
+    }
+  }
+
+  app.innerHTML=`${hud()}<div class="card card-in"><div class="weekbar">${bars}</div>
+    <div class="whead" style="margin-bottom:14px;">
+      <div>${avatarImg(S.persona, 72)}</div>
+      <div style="flex:1;min-width:0"><h2 style="margin:0">Week ${S.week} / 4</h2>
+        <p class="muted" style="margin:4px 0 0;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:.8rem;line-height:1.4">${monthName(S.month)} · Cash <b>${R(S.wallet)}</b> · Fun <b>${R(S.funEnv)}</b>${(S.sinking||0)>0?` · Sink <b>${R(S.sinking)}</b>`:''}</p></div>
+      <div class="wevicon card-pop">${icon(ev.icon||(ev.quiet?'quiet':'coin'),48)}</div>
+    </div>
+    <div>
+      ${body}
+      ${actions}
+    </div></div>`;
+
+  const cont=document.getElementById("contBtn");
+  if(cont) cont.onclick=()=>{ S.curEvent=null; save(); render(); };
+
+  app.querySelectorAll(".opt").forEach(b=> b.onclick=()=> resolveChoice(b.dataset.do));
+  paintHud();
+}
+
+function resolveChoice(kind){
+  const ev=S.curEvent;
+  if(ev.reward){
+    if(kind==="treat"){
+      let cost=ev.base;
+      const fromWallet=Math.min(cost,S.wallet); S.wallet-=fromWallet; cost-=fromWallet;
+      const fromFun=Math.min(cost,S.funEnv); S.funEnv-=fromFun;
+      S.momentum=3; S.fatigue=Math.max(0,(S.fatigue||0)-30); S.treatMonth=S.month;
+      ev.resolved=`You took the break — ${R(ev.base)} well spent, zero guilt. Momentum for 3 months: rested people hustle better.`;
+      sfx.coin(); flash('#00b894'); burst(innerWidth/2, innerHeight*0.4, {colors:['#00b894','#6c5ce7','#fdcb6e','#e17055']});
+      speak('action_treat', 200);
+    } else {
+      S.fatigue=Math.min(100,(S.fatigue||0)+5);
+      ev.resolved="You skipped it. Discipline is good — but all gas and no oil burns out the engine.";
+      speak('action_skip', 200);
+    }
+    save(); render(); return;
+  }
+  if(!ev.bad){
+    const amt=ev.base;
+    if(kind==="save"){ S.emergencyFund+=amt; ev.resolved=`You banked ${R(amt)} into your emergency fund. Steady wins.`; }
+    else if(kind==="debt"){ const pay=Math.min(amt,S.debt); S.debt-=pay;
+      const extra=amt-pay; if(extra>0) S.emergencyFund+=extra;
+      ev.resolved=`You knocked ${R(pay)} off your debt${extra>0?` and saved the extra ${R(extra)}`:''}. Interest will thank you.`; }
+    else {
+      S.funEnv+=amt;
+      // Earned vs unearned: a treat only builds Momentum when the month is trending up
+      const rose = hudVals().nw >= (S.nwStart||0);
+      if(rose){ S.momentum=3; S.fatigue=Math.max(0,(S.fatigue||0)-30); S.treatMonth=S.month;
+        ev.resolved=`You treated yourself with ${R(amt)} — while your net worth climbed. That's Momentum, not a leak.`; }
+      else ev.resolved=`You treated yourself with ${R(amt)}. Enjoy it — but treating yourself while things slide is a leak, not a reward.`;
+    }
+    if(kind==="save"){ sfx.savings(); speak('action_save', 200); }
+    else if(kind==="debt"){ sfx.pay(); speak('action_debt', 200); }
+    else {
+      sfx.coin();
+      const rose = hudVals().nw >= (S.nwStart||0);
+      speak(rose ? 'action_spend_good' : 'action_spend_bad', 200);
+    }
+    flash('#00b894'); burst(innerWidth/2, innerHeight*0.4, {colors:['#00b894','#6c5ce7','#fdcb6e','#e17055']});
+    save(); render(); return;
+  }
+  const need=ev.need; let usedCredit=false;
+  if(kind==="fund"){
+    const fromFund=Math.min(need,S.emergencyFund); S.emergencyFund-=fromFund; S.tappedFund+=fromFund;
+    const rem=need-fromFund; let cr=0; if(rem>0){ cr=Math.round(rem*CREDIT_MARKUP); S.debt+=cr; S.forcedCredit+=rem; usedCredit=true; }
+    ev.resolved=`Used ${R(fromFund)} from your emergency fund${cr?` and put ${R(cr)} on credit`:''}. Top that fund back up when you can.`;
+  } else if(kind==="cut"){
+    let left=need; const fromFun=Math.min(left,S.funEnv); S.funEnv-=fromFun; left-=fromFun;
+    const fromWallet=Math.min(left,S.wallet); S.wallet-=fromWallet; left-=fromWallet;
+    let cr=0; if(left>0){ cr=Math.round(left*CREDIT_MARKUP); S.debt+=cr; S.forcedCredit+=left; usedCredit=true; }
+    ev.resolved=`Cut ${R(fromFun)} of lifestyle and ${R(fromWallet)} of spare cash${cr?`, ${R(cr)} on credit`:''}. No fun, but no big debt.`;
+  } else if(kind==="goal"){ // raid the goal pot at a 10% penalty
+    const cover=Math.min(need, Math.floor(S.goal.saved/1.1 + 1e-6));
+    S.goal.saved-=Math.round(cover*1.1);
+    const rem=need-cover; let cr=0;
+    if(rem>0){ cr=Math.round(rem*CREDIT_MARKUP); S.debt+=cr; S.forcedCredit+=rem; usedCredit=true; }
+    ev.resolved=`Raided ${R(Math.round(cover*1.1))} from your ${S.goal.name} fund to cover ${R(cover)}${cr?`, plus ${R(cr)} on credit`:''}. The 10% penalty is the price of breaking a promise to yourself.`;
+  } else { // credit
+    const add=Math.round(need*CREDIT_MARKUP); S.debt+=add; S.forcedCredit+=need; usedCredit=true;
+    ev.resolved=`You added ${R(add)} to your debt. It's the easy button — but it compounds.`;
+  }
+  if(ev.snap) S.fatigue=Math.max(0,(S.fatigue||0)-25);   // the splurge did relieve something
+  if(kind==="credit" || usedCredit) { sfx.credit(); speak(usedCredit && kind!=="credit" ? 'action_credit' : 'credit', 220); }
+  else if(kind==="fund"){ sfx.emergency(); speak('action_fund', 200); }
+  else if(kind==="goal"){ sfx.pay(); speak('action_goal', 200); }
+  else { sfx.pay(); speak('action_cut', 200); }
+  shake(); flash(usedCredit ? '#B91C1C' : '#B45309');
+  save(); render();
+}
+
+/* ---------------------- MONTH END ---------------------- */
+function endMonth(){
+  const essN=essentialsTotal();
+  const savedThisMonth=(S.alloc.emergency||0)+(S.alloc.stokvel||0);
+  const savingsRate=savedThisMonth/S.income;
+
+  // Underspent lifestyle -> half quietly saved
+  let frugalMsg="";
+  if(S.funEnv>50){ const bonus=Math.round(S.funEnv*0.5); S.emergencyFund+=bonus;
+    frugalMsg=`You underspent lifestyle — ${R(bonus)} quietly went to savings.`; }
+  S.rollover=Math.max(0,S.wallet);
+
+  // Stokvel payout: end of November, with a 10% bonus — the December sinking fund
+  let stokvelMsg="";
+  if(calMonth(S.month)===11 && S.stokvel>0){
+    const pay=Math.round(S.stokvel*1.10);
+    stokvelMsg=`Your stokvel paid out ${R(pay)} (incl. 10% bonus) into your emergency fund — just in time for December.`;
+    S.emergencyFund+=pay; S.stokvel=0; }
+
+  if(S.debt>0) S.debt=Math.round(S.debt*DEBT_INTEREST);
+
+  // Income drift
+  let incomeMsg=""; const roll=Math.random();
+  if(roll>0.88){ const up=Math.round(S.income*0.06); S.income+=up; incomeMsg=`You got a raise of ${R(up)}/mo!`; }
+  else if(roll<0.10){ const dn=Math.round(S.income*0.05); S.income-=dn; incomeMsg=`Your hours were cut — income down ${R(dn)}/mo.`; }
+
+  // ---- Momentum & fatigue (v3 step 6) ----
+  const funAlloc=(S.alloc.fun||0);
+  const treated=S.treatMonth===S.month;
+  if(!treated){
+    if(funAlloc < S.income*0.02) S.fatigue=Math.min(100,(S.fatigue||0)+20);   // pure austerity
+    else S.fatigue=Math.max(0,(S.fatigue||0)-5);                              // living a little
+  }
+  if(S.momentum>0) S.momentum--;
+  // Progress markers queue an earned-reward offer for next month
+  S.markers=S.markers||{};
+  if(!S.rewardPending){
+    if(!S.markers.debtFree && S.debt===0 && PERSONAS[S.persona].debt>0){
+      S.markers.debtFree=true; S.rewardPending="Your debt: gone. That deserves marking."; }
+    else if(!S.markers.fundGrow && (S.efLast||0)>0 && S.emergencyFund>S.efLast){
+      S.markers.fundGrow=true; S.rewardPending="Your emergency fund just grew through a whole month of real life."; }
+  }
+  S.efLast=S.emergencyFund;
+
+  // Transparent score — Savings 30 · Buffer 30 · Debt 20 · No-credit 10 · Balance 10
+  const emergencyMonths=essN>0?S.emergencyFund/essN:0;
+  const pSave=Math.min(30,Math.round(savingsRate*150));
+  const pBuf=Math.min(30,Math.round(emergencyMonths*12));
+  const pDebt=S.debt===0?20:Math.max(0,20-Math.round(S.debt/S.income*8));
+  const pCrisis=S.forcedCredit>0?0:10;
+  const pBalance=(savingsRate>=0.10 && (funAlloc>0 || treated))?10:0;
+  const sc=Math.max(0,Math.min(100,pSave+pBuf+pDebt+pCrisis+pBalance));
+  S.scoreTotal+=sc;
+
+  // ---- Badges & long-game tracking (persist across runs) ----
+  if(emergencyMonths>=3 && S.debt<=S.income*0.25 && (S.alloc.fun||0)>0)
+    S.thriving=(S.thriving||0)+1;
+  [[12,"long12"],[24,"long24"],[50,"long50"],[100,"long100"]]
+    .forEach(([n,id])=>{ if((S.thriving||0)>=n) awardBadge(id); });
+  const balanced = savingsRate>=0.15 && (S.alloc.fun||0)>=S.income*0.05;
+  S.balStreak = balanced ? (S.balStreak||0)+1 : 0;
+  if(S.balStreak>=6) awardBadge("balanced");
+  if(S.difficulty==="brutal" && S.month>=12) awardBadge("brutal12");
+  if(S.debt>S.income*1.5) S.deepDebt=true;
+  if(S.deepDebt && S.debt<=0) awardBadge("comeback");
+  const cmNow=calMonth(S.month);
+  if(cmNow===12) S.decNoCredit = S.forcedCredit===0;
+  if(cmNow===1 && S.decNoCredit && S.forcedCredit===0) awardBadge("janworry");
+
+  // ---- Life goal: story beats & completion ----
+  let goalMsg="";
+  if(goalActive()){
+    if(S.goal.saved>=S.goal.target){
+      goalMsg=completeGoal();
+    } else {
+      const pct=Math.round(S.goal.saved/S.goal.target*100);
+      [[75,"Three quarters of the way to"],[50,"Halfway to"],[25,"A quarter of the way to"]]
+        .some(([p,txt])=>{ if(pct>=p && (S.goal.lastPct||0)<p){
+          goalMsg=`${txt} your ${S.goal.name}. Keep going.`;
+          if(!S.rewardPending) S.rewardPending=`You hit ${p}% of your ${S.goal.name}.`;   // goal beats earn a treat
+          return true; } return false; });
+      S.goal.lastPct=Math.max(S.goal.lastPct||0,pct);
+    }
+  }
+  // ---- Stabilize milestone (no longer ends the game) ----
+  let stabMsg="";
+  if(emergencyMonths>=3 && S.debt<=0 && !S.stabilized){
+    S.stabilized=true;
+    stabMsg="STABILIZED: a 3-month fund and zero debt. That's the foundation most people never build — now build on it.";
+  }
+
+  S.summary={ sc,pSave,pBuf,pDebt,pCrisis,pBalance,emergencyMonths,savingsRate,essN,
+    frugalMsg,stokvelMsg,incomeMsg,goalMsg,stabMsg,forcedCredit:S.forcedCredit,tappedFund:S.tappedFund };
+  S.history.push({month:S.month,score:sc,netWorth:Math.round(S.emergencyFund+S.stokvel+(S.sinking||0)+((S.goal&&S.goal.saved)||0)+S.rollover-S.debt)});
+
+  if(S.debt>S.income*2){ S.status="over"; S.won=false; save(); return render(); }
+  // Win = Stabilize (3-month fund + debt-free) AND Build (life goal complete).
+  // "No goal" runs keep the classic Stabilize-only win. In endless mode
+  // (after the first victory) the run just keeps going.
+  const goalSatisfied = S.goal ? (S.goal.id==="none" || !!S.goal.done) : false;
+  if(emergencyMonths>=3 && S.debt<=0 && goalSatisfied && !S.victory){ S.status="over"; S.won=true; save(); return render(); }
+  S.status="summary"; save(); render();
+}
+
+function feedbackTips(){
+  const t=[], s=S.summary;
+  if(s.savingsRate>=0.15) t.push(["good",`You saved ${Math.round(s.savingsRate*100)}% of income — strong discipline.`]);
+  else if(s.savingsRate>0) t.push(["",`You saved ${Math.round(s.savingsRate*100)}%. The classic target is 20% — nudge it up.`]);
+  else t.push(["warn","You saved nothing this month. Even a small fund changes everything when life hits."]);
+  if(s.forcedCredit>0) t.push(["warn",`You leaned on credit for ${R(s.forcedCredit)} of surprises — the priciest way to cope. A buffer beats it every time.`]);
+  else if(s.tappedFund>0) t.push(["good",`Your emergency fund absorbed ${R(s.tappedFund)} of shocks — exactly its job. Refill it.`]);
+  if(s.emergencyMonths>=3) t.push(["good","You hold 3+ months of expenses in reserve. Real resilience."]);
+  else t.push(["",`Your fund covers ${s.emergencyMonths.toFixed(1)} month(s). Aim for 3.`]);
+  if(S.debt>0) t.push(["warn",`Debt is now ${R(S.debt)}, growing 5%/month. Attacking it early costs you far less.`]);
+  else t.push(["good","You're debt-free — every rand now works for you."]);
+  if((S.fatigue||0)>=60) t.push(["warn","You've run months of pure austerity. That's how budgets snap — plan a small treat on purpose. Saving shouldn't be a drag."]);
+  else if(s.pBalance===10) t.push(["good","You saved AND lived a little. That's the sustainable kind of discipline — the kind that lasts 100 months."]);
+  if(S.momentum>0) t.push(["good",`Momentum: ${S.momentum} month(s) left — you're rested, and luck leans your way.`]);
+  return t;
+}
+
+function renderSummary(){
+  const s=S.summary;
+  const milestone = (S.month%12===0)
+    ? `You've survived a full year on ${DIFFICULTY[S.difficulty].name}${S.persona==='tight'?' with barely any margin':''}. That's real.` : "";
+  const badgeLis=(S.newBadges||[]).map(m=>`<li class="good">${icon("trophy",16)} New badge: ${m}</li>`).join("");
+  const gotBadge=!!badgeLis; S.newBadges=[];
+  const extra=badgeLis+[s.goalMsg,s.stabMsg,milestone,s.frugalMsg,s.stokvelMsg,s.incomeMsg].filter(Boolean).map(m=>`<li class="good">${icon("trophy",14)} ${m}</li>`).join("");
+  const tips=feedbackTips().map(([k,x])=>`<li class="${k}">${x}</li>`).join("");
+  setModalOpen(false);
+  app.innerHTML=`${hud()}
+    <div class="card card-in results-card" role="region" aria-labelledby="summary-title">
+      <div class="results-hero">
+        <div class="results-identity">
+          ${avatarImg(S.persona, 84)}
+          <div>
+            <div class="kicker" style="margin-bottom:8px"><span class="dot"></span> Month ${S.month} · ${monthName(S.month)}</div>
+            <h1 id="summary-title" style="margin:0; font-size:clamp(1.6rem,4.5vw,2.2rem);">Month Survived</h1>
+            <p class="lead" style="margin:8px 0 0; max-width:28rem;">You made it through another month. Here's how the money held up.</p>
+          </div>
+        </div>
+        <div class="results-scoreboard">
+          <div class="score-ring"><div class="scorebig"><span data-score>0</span><span class="score-den">/100</span></div></div>
+          <div class="muted" style="font-weight:800;text-transform:uppercase;letter-spacing:.08em;font-size:.78rem;">
+            Month · <b style="color:var(--ink)">${s.sc}</b>
+            &nbsp;·&nbsp; Total · <b style="color:var(--ink)">${S.scoreTotal}</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-grid">
+        <div class="results-panel">
+          <h3>${icon("star",18)} Score breakdown</h3>
+          <div class="scoreline"><span>Savings rate</span><b>+${s.pSave}</b></div>
+          <div class="scoreline"><span>Emergency buffer (${s.emergencyMonths.toFixed(1)} mo)</span><b>+${s.pBuf}</b></div>
+          <div class="scoreline"><span>Debt handling</span><b>+${s.pDebt}</b></div>
+          <div class="scoreline"><span>Weathered it without credit</span><b>+${s.pCrisis}</b></div>
+          <div class="scoreline" style="border-bottom:none"><span>Balanced life (saved <i>and</i> lived)</span><b>+${s.pBalance||0}</b></div>
+        </div>
+        <div class="results-panel">
+          <h3>${icon("trophy",18)} What stood out</h3>
+          <ul class="tips" style="margin-top:0">${extra||''}${tips}</ul>
+          <p style="margin-top:14px;font-size:.9rem;line-height:1.45">
+            <a href="https://www.budget-hub.com/?utm_source=game&utm_medium=summary" target="_blank" rel="noopener"
+              style="color:var(--purple);font-weight:800">Budget Hub tracks this for real — free →</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="results-actions">
+        <button class="btn play block" id="nextBtn">${icon("chevron-right",18)} Next month · ${S.month+1}</button>
+      </div>
+    </div>`;
+  const nextBtn=document.getElementById("nextBtn");
+  if(nextBtn){
+    nextBtn.onclick=()=>{ S.month++; S.alloc=null; S.curEvent=null; S.status="budget"; save(); render(); };
+    setTimeout(()=>{ nextBtn.focus({preventScroll:true}); }, 80);
+  }
+  paintHud();
+  animateInt(app.querySelector('[data-score]'), s.sc, 800);
+  if(!s.voicePlayed){
+    s.voicePlayed=true; save();
+    setTimeout(()=>sfx.monthSurvived(), 250);
+    speak('month_survived', 400);
+    if(s.stokvelMsg) speak('stokvel', 3200);
+    else if(s.incomeMsg && /raise/i.test(s.incomeMsg)) speak('raise', 3200);
+    else if(s.incomeMsg) speak('cut_hours', 3200);
+    if(gotBadge) speak('badge', 4500);
+  } else sfx.coin();
+  if(gotBadge){ sfx.win(); burst(innerWidth/2, innerHeight*0.25, {n:36, colors:['#fdcb6e','#6c5ce7','#00b894']}); }
+  else if(s.sc>=80) burst(innerWidth/2, innerHeight*0.3, {n:26, colors:['#6c5ce7','#00b894','#fdcb6e']});
+}
+
+function renderOver(){
+  const won=S.won, nw=Math.round(S.emergencyFund+S.stokvel+(S.sinking||0)+((S.goal&&S.goal.saved)||0)+S.rollover-S.debt);
+  const badgeLis=(S.newBadges||[]).map(m=>`<li class="good">${icon("trophy",16)} New badge: ${m}</li>`).join("");
+  S.newBadges=[];
+  setModalOpen(false);
+  app.innerHTML=`${hud()}
+    <div class="card card-in results-card" role="region" aria-labelledby="over-title">
+      <div class="results-hero" style="justify-content:center; flex-direction:column; text-align:center; gap:14px;">
+        <div style="display:flex; justify-content:center;">${avatarImg(S.persona, 96)}</div>
+        <div class="win-banner" style="display:inline-flex; align-items:center; gap:10px; margin:0 auto; padding:8px 14px; border:3px solid var(--ink); border-radius:999px; background:${won?'var(--green-soft)':'var(--red-soft)'}; box-shadow:var(--shadow); font-size:clamp(1rem,3vw,1.25rem);">
+          ${won?`${icon("trophy",22)} You won!`:`${icon("cross",22)} Game over`}
+        </div>
+        <h1 id="over-title" style="margin:0; font-size:clamp(1.8rem,5vw,2.6rem);">${won?"Financially resilient":"Debt spiral"}</h1>
+      </div>
+
+      <div class="results-grid" style="margin-top:12px">
+        <div class="results-panel" style="text-align:center">
+          <div class="scorebig" style="margin:4px 0 6px; font-size:clamp(2.6rem,8vw,3.8rem);">${S.scoreTotal}</div>
+          <div class="muted" style="font-size:.85rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em;">
+            total score · net worth ${R(nw)} · ${S.month} months
+          </div>
+          <p class="lead" style="margin:18px auto 0; text-align:center; max-width:36rem;">${won
+            ? `You reached a 3-month emergency fund, cleared your debt${S.goal&&S.goal.done?` and completed your <b>${S.goal.name}</b>`:''} by Month ${S.month}. That safety net is what winning with money actually looks like.`
+            : `Your debt outran your income and snowballed past ${R(S.income*2)}. It happens to millions — usually one unbudgeted emergency at a time. The fix is boring but powerful: a buffer before the storm.`}</p>
+          ${badgeLis?`<ul class="tips" style="text-align:left; margin-top:16px;">${badgeLis}</ul>`:''}
+        </div>
+        <div class="results-panel">
+          <div class="cta" style="margin:0; background:var(--purple-soft); color:var(--ink); border:3px solid var(--ink); box-shadow:var(--shadow);">
+            <div style="font-size:1.05rem;font-weight:800;margin-bottom:8px;font-family:var(--font-display);text-transform:uppercase;letter-spacing:-.02em;">Want to run your <i>real</i> budget like this?</div>
+            <div style="font-size:.92rem;opacity:.95;line-height:1.5;">Budget Hub tracks your actual income, expenses, goals and emergency fund — free.</div>
+            <div style="margin-top:12px; font-size:1rem;"><a href="https://www.budget-hub.com/accounts/signup/" target="_blank" rel="noopener" style="color:var(--purple);font-weight:800;">Start free →</a></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-actions">
+        ${won?`<button class="btn play block" id="endlessBtn">${icon("play",18)} Endless · Month ${S.month+1}</button>`:''}
+        <button class="btn ${won?'sec ':''}block" id="againBtn">${icon("reset",18)} Play again</button>
+      </div>
+    </div>`;
+  const eb=document.getElementById("endlessBtn");
+  if(eb) eb.onclick=()=>continueRun();
+  const again=document.getElementById("againBtn");
+  if(again){
+    again.onclick=()=>wipe();
+    setTimeout(()=>{ (eb||again).focus({preventScroll:true}); }, 80);
+  }
+  paintHud();
+  if(won){ sfx.win();
+    setTimeout(()=>burst(innerWidth/2, innerHeight*0.32, {n:46, colors:['#6c5ce7','#00b894','#fdcb6e','#e17055']}),120);
+    speak('win', 350);
+    if(badgeLis) speak('badge', 4200);
+  } else { sfx.lose(); flash('#e17055'); shake(); speak('lose', 350); }
+}
+
+/* ---------------------- boot ---------------------- */
+function migrate(st){
+  if(!st) return st;
+  if(!st.difficulty) st.difficulty="realistic";
+  if((st.version||2)<3){    // v2 save → v3: cooldowns + persona car ownership
+    st.version=3; st.cooldowns={};
+    st.hasCar = PERSONAS[st.persona] ? PERSONAS[st.persona].hasCar : true;
+  }
+  if(!st.cooldowns) st.cooldowns={};
+  // step-3 calendar fields for saves from earlier v3 builds
+  if(st.sinking===undefined) st.sinking=0;
+  if(st.schedDue===undefined) st.schedDue=[];
+  if(st.adjMonth===undefined) st.adjMonth=0;
+  // step-4 car arc
+  if(st.hasCar && !st.car) st.car={wear:0,newUntil:0};
+  // step-5 life goals & homeowner conversion
+  if(st.goal===undefined) st.goal=null;
+  if(st.homeowner===undefined) st.homeowner=false;
+  if(st.stabilized===undefined) st.stabilized=false;
+  // step-6 momentum, fatigue & endless mode
+  if(st.momentum===undefined) st.momentum=0;
+  if(st.fatigue===undefined) st.fatigue=0;
+  if(st.markers===undefined) st.markers={};
+  if(st.victory===undefined) st.victory=false;
+  return st;
+}
+document.getElementById("resetBtn").onclick=()=>{ if(confirm("Reset your game and clear saved progress on this device? (Badges you've earned are kept.)")) wipe(); };
+
+// Sound: unlock on first gesture, welcome voice once, click feedback on controls, mute toggle.
+document.addEventListener('pointerdown', ()=>{
+  ensureAudio(); startAmbient();
+  if(!window.__bhVoiceHello){ window.__bhVoiceHello=true; if(!S) speak('game_start', 120); }
+}, {once:true});
+app.addEventListener('click', e=>{ if(e.target.closest('.btn,.opt,.step,.persona,.ghost')){ ensureAudio(); startAmbient(); sfx.click(); if(navigator.vibrate) navigator.vibrate(15); } });
+window.addEventListener('resize', sizeCanvas);
+const muteBtn=document.getElementById('muteBtn');
+function paintMute(){ muteBtn.innerHTML = icon(muted ? 'sound-off' : 'sound-on', 18); }
+muteBtn.onclick=()=>{
+  muted=!muted;
+  localStorage.setItem('bh_game_muted', muted?'1':'0');
+  if(muted){ stopAmbient(); stopVoice(); }
+  else startAmbient();
+  paintMute();
+};
+paintMute();
+// Warm up speech voices list (Chrome loads async)
+if('speechSynthesis' in window){ try{ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices(); }catch(e){} }
+
+S=migrate(load()); render();
+</script>
+</body>
+</html>
