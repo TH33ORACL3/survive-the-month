@@ -1018,14 +1018,76 @@ const bgMusic = new Audio(assetUrl(`${SFX_DIR}ambient.mp3`));
 bgMusic.loop = true;
 bgMusic.preload = 'auto';
 bgMusic.volume = 0.18;
-function startAmbient(){
-  if(muted || !bgMusic.paused) return;
-  const p=bgMusic.play();
-  if(p && p.catch) p.catch(()=>{});
+
+let bgMusicBuffer = null;
+let bgMusicSource = null;
+let bgMusicGain = null;
+let bgMusicPlaying = false;
+
+function loadBgMusic() {
+  if (typeof fetch === 'undefined') return;
+  fetch(assetUrl(`${SFX_DIR}ambient.mp3`))
+    .then(r => r.arrayBuffer())
+    .then(ab => {
+      if (audioCtx) {
+        audioCtx.decodeAudioData(ab, buffer => {
+          bgMusicBuffer = buffer;
+          if (bgMusicPlaying && !muted) {
+            playBgMusicGapless();
+          }
+        }, () => {});
+      }
+    }).catch(() => {});
 }
-function stopAmbient(){ bgMusic.pause(); }
+
+function playBgMusicGapless() {
+  if (!audioCtx || !bgMusicBuffer) return;
+  stopBgMusicGapless();
+  bgMusicSource = audioCtx.createBufferSource();
+  bgMusicSource.buffer = bgMusicBuffer;
+  bgMusicSource.loop = true;
+  bgMusicGain = audioCtx.createGain();
+  bgMusicGain.gain.setValueAtTime(0.18, audioCtx.currentTime);
+  bgMusicSource.connect(bgMusicGain);
+  bgMusicGain.connect(audioCtx.destination);
+  bgMusicSource.start(0);
+  bgMusic.pause(); // pause HTML5 fallback if it was playing
+}
+
+function stopBgMusicGapless() {
+  if (bgMusicSource) {
+    try { bgMusicSource.stop(); } catch(e) {}
+    bgMusicSource = null;
+  }
+}
+
+function startAmbient(){
+  bgMusicPlaying = true;
+  if(muted) return;
+  ensureAudio();
+  if (bgMusicBuffer && audioCtx) {
+    playBgMusicGapless();
+  } else {
+    if (bgMusic.paused) {
+      const p = bgMusic.play();
+      if(p && p.catch) p.catch(()=>{});
+    }
+  }
+}
+
+function stopAmbient(){
+  bgMusicPlaying = false;
+  stopBgMusicGapless();
+  bgMusic.pause();
+}
+
 function ensureAudio(){
-  if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} }
+  if(!audioCtx){
+    try{
+      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+      loadBgMusic();
+    }catch(e){}
+  }
   if(audioCtx && audioCtx.state==='suspended') audioCtx.resume();
 }
 function playFile(name, fallback){
